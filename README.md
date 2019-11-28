@@ -9,6 +9,8 @@
 将动画纹理格式由原先的TextureFormat.RGBAHalf替换为TextureFormat.RGBA32，为了不损失动画精度，该纹理用2个RGBA32的通道(RGBA32中1个通道占8位)
 去还原1个RGBAHalf的通道(RGBAHalf中1个通道16位)，这里自己做了位运算去处理Float16。所以动画纹理的大小增加了一倍，但可以在OpenGL ES2.0中使用了。
 
+## 2019/11/28 更新
+骨骼id是通过uv1传入的，是float类型，在shader中直接取整会采样到错误的位置，所以加了个四舍五入的操作。另外增加了子mesh的选择。
 
 ## 如何导出相关纹理数据等 <br>
 菜单栏"Window" -> "GpuSkinningTool" -> 选择录入资源 -> 检查生成纹理的相关信息 -> 生成	<br>
