@@ -14,6 +14,9 @@
 骨骼id是通过uv1传入的，是float类型，在shader中直接取整会采样到错误的位置，所以加了个四舍五入的操作。另外增加了子mesh的选择。
 修改了gpuskinning的shader，让它可以通过unity的instance来自动选择使用meshRenderer还是instance来渲染（勾上Enable GPU Instancing）。<br>
 
+## 2019/12/01 更新
+部分低配安卓机使用骨骼计算仍然很慢，所以添加了顶点动画的转换。顶点动画的混合原理和骨骼一样，不过动画纹理会大很多。 <br>
+
 ## 如何导出相关纹理数据等 <br>
 菜单栏"Window" -> "GpuSkinningTool" -> 选择录入资源 -> 检查生成纹理的相关信息 -> 生成	<br>
 
