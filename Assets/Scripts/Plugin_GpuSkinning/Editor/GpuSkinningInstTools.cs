@@ -72,7 +72,7 @@ public class GpuSkinningInstTools : EditorWindow
 
 	private void OnGUI() 
 	{
-        selectedFbx = (GameObject)EditorGUILayout.ObjectField(selectedFbx, typeof(GameObject), false);
+        selectedFbx = (GameObject)EditorGUILayout.ObjectField("请选择Fbx文件:", selectedFbx, typeof(GameObject), false);
         if (selectedFbx)
         {
             //Debug.Log(selectedFbx);
