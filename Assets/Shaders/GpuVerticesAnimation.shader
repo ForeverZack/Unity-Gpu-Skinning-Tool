@@ -57,7 +57,7 @@ Shader "Custom/GpuVerticesAnimation" {
 
 				float4 convertColors2Halfs(float4 color1, float4 color2)
 				{
-					return float4(convertFloat16BytesToHalf(color1.r * 255, color1.g * 255), convertFloat16BytesToHalf(color1.b * 255, color1.a * 255), convertFloat16BytesToHalf(color2.r * 255, color2.g * 255), convertFloat16BytesToHalf(color2.b * 255, color2.a * 255));
+					return float4(convertFloat16BytesToHalf(floor(color1.r * 255 + 0.5), floor(color1.g * 255 + 0.5)), convertFloat16BytesToHalf(floor(color1.b * 255 + 0.5), floor(color1.a * 255 + 0.5)), convertFloat16BytesToHalf(floor(color2.r * 255 + 0.5), floor(color2.g * 255 + 0.5)), 1);
 				}
 
 				#include "UnityCG.cginc"
