@@ -45,11 +45,11 @@ Shader "Custom/GpuVerticesAnimation" {
 
 				float convertFloat16BytesToHalf(int data1, int data2)
 				{
-					float result = 16 * (data1 >> 6 & 0x01) + 8 * (data1 >> 5 & 0x01) + 4 * (data1 >> 4 & 0x01) + 2 * (data1 >> 3 & 0x01) + 1 * (data1 >> 2 & 0x01)	// 整数部分
-						+ 0.5*(data1 >> 1 & 0x01) + 0.25*(data1 & 0x01) + 0.125*(data2 >> 7 & 0x01) + 0.0625*(data2 >> 6 & 0x01) + 0.03125*(data2 >> 5 & 0x01)	// 小数部分
-						+ 0.015625*(data2 >> 4 & 0x01) + 0.0078125*(data2 >> 3 & 0x01) + 0.00390625*(data2 >> 2 & 0x01) + 0.001953125*(data2 >> 1 & 0x01) + 0.0009765625*(data2 & 0x01);
+					float result = 16 * (data1/64%2) + 8 * (data1/32%2) + 4 * (data1/16%2) + 2 * (data1/8%2) + 1 * (data1/4%2)	// 整数部分
+						+ 0.5*(data1/2%2) + 0.25*(data1%2) + 0.125*(data2/128%2) + 0.0625*(data2/64%2) + 0.03125*(data2/32%2)	// 小数部分
+						+ 0.015625*(data2/16%2) + 0.0078125*(data2/8%2) + 0.00390625*(data2/4%2) + 0.001953125*(data2/2%2) + 0.0009765625*(data2%2);
 
-					int flag = (data1 >> 7 & 0x01);
+					int flag = (data1/128%2);
 					result = result - 2 * (1 - flag)*result;		//0: 负  1:正
 
 					return result;
