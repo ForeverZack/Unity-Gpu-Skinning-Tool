@@ -7,3 +7,4 @@ Temp
 UnityPackageManager
 *.csproj
 *.sln
+.DS_Store
