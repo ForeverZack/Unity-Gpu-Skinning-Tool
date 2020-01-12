@@ -490,31 +490,31 @@ public class GpuSkinningInstGenerator
         int integer = (int)srcValue;
         float floats = srcValue - integer;
 
-        if (integer > 31)
+        if (integer > 127)
         {
             // 超过float16的范围
-            EditorUtility.DisplayDialog("警告!!", "模型数据值大于31，超过Float16的范围", "OK");
-            integer = 31;
+            EditorUtility.DisplayDialog("警告!!", "模型数据值大于127，超过Float16的范围", "OK");
+            integer = 127;
         }
-        if (integer < -31)
+        if (integer < -127)
         {
             // 超过float16的范围
-            EditorUtility.DisplayDialog("警告!!", "模型数据值小于-31，超过Float16的范围", "OK");
-            integer = -31;
+            EditorUtility.DisplayDialog("警告!!", "模型数据值小于-127，超过Float16的范围", "OK");
+            integer = -127;
         }
 
-        // 1个符号位(+:1)，5个指数位，10个基数位
+        // 1个符号位(+:1)，7个指数位，8个基数位
         int[] data = new int[16];
         int index = 0;
 
-        // 符号
+        // 符号 //1: 负  0:正
         if (srcValue > 0)
         {
-            data[index++] = 1;
+            data[index++] = 0;
         }
         else
         {
-            data[index++] = 0;
+            data[index++] = 1;
             floats = -(srcValue - integer);
             integer = -integer;
         }
@@ -526,9 +526,9 @@ public class GpuSkinningInstGenerator
             integer_rst.Add(integer % 2);
             integer /= 2;
         }
-        if (integer_rst.Count < 5)
+        if (integer_rst.Count < 7)
         {
-            int length = 5 - integer_rst.Count;
+            int length = 7 - integer_rst.Count;
             for (int i = 0; i < length; ++i)
             {
                 data[index++] = 0;
@@ -542,7 +542,7 @@ public class GpuSkinningInstGenerator
 
         // 小数位
         int temp;
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 8; ++i)
         {
             floats *= 2;
             temp = (int)floats;
