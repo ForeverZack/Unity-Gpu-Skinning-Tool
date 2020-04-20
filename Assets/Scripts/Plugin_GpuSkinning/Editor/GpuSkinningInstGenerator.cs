@@ -48,6 +48,7 @@ public class GpuSkinningInstGenerator
     private List<GpuSkinningAnimClip> clipsData = null;
     Dictionary<Transform, int> boneIds = null;
     Dictionary<int, Matrix4x4> boneBindposes = null;
+    string animTexturePath; // 动画纹理保存路径
 
     public GpuSkinningInstGenerator()
     {
@@ -78,7 +79,7 @@ public class GpuSkinningInstGenerator
             return;
         }
 
-        if (curGameObject != obj || animData == null || genType != type)
+        if (curGameObject != obj || animData == null || genType != type || skinnedMeshRenderer != selectedSkinnedMeshRenderer)
         {
             genType = type;
             curGameObject = obj;
@@ -167,7 +168,7 @@ public class GpuSkinningInstGenerator
         rebuildAllMeshes(savePath, parentFolder);
 
         // 将骨骼矩阵写入纹理
-        var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBA32, false);
+        var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGB24, false);
         tex2D.filterMode = FilterMode.Point;
         int clipIdx = 0;
         int pixelIdx = 0;
@@ -202,18 +203,19 @@ public class GpuSkinningInstGenerator
                     matrixMulFloat(ref boneMatrix2, boneWeights.z);
                     matrixMulFloat(ref boneMatrix3, boneWeights.w);
                     position = (matrixAddMatrix(matrixAddMatrix(boneMatrix0, boneMatrix1), matrixAddMatrix(boneMatrix2, boneMatrix3))) * vertex;
-                    Color color1 = convertFloat16Bytes2Color(convertFloat32toFloat16Bytes(position.x),  convertFloat32toFloat16Bytes(position.y));
-                    tex2D.SetPixel(vertexIndex, totalFrameIndex * 2, color1);
-                    Color color2 = convertFloat16Bytes2Color(convertFloat32toFloat16Bytes(position.z), convertFloat32toFloat16Bytes(position.w));
-                    tex2D.SetPixel(vertexIndex, totalFrameIndex * 2 + 1, color2);
+                    Color[] colors = convertThreeFloat16Bytes2TwoColor(convertFloat32toFloat16Bytes(position.x), convertFloat32toFloat16Bytes(position.y), convertFloat32toFloat16Bytes(position.z));
+                    tex2D.SetPixel(vertexIndex, totalFrameIndex * 2, colors[0]);
+                    tex2D.SetPixel(vertexIndex, totalFrameIndex * 2 + 1, colors[1]);
                 }
 
                 ++totalFrameIndex;
             }
         }
         tex2D.Apply();
-        byte[] bytes = tex2D.GetRawTextureData();
-        animData.texBytes = bytes;
+        // 导出动画纹理
+        animTexturePath = savePath + dataFileName.Replace(".bytes", "") + ".png";
+        exportTexture(tex2D, animTexturePath);
+        setAnimationTextureProperties(animTexturePath);
 
         // 序列化后存储
         byte[] array = MessagePackSerializer.Serialize(animData);
@@ -286,6 +288,27 @@ public class GpuSkinningInstGenerator
         return matrix;
     }
 
+    void exportTexture(Texture2D texture, string path)
+    {
+        byte[] bytes = texture.EncodeToPNG();
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+        FileStream fs = new FileStream(path, FileMode.Create);
+        fs.Write(bytes, 0, bytes.Length);
+        fs.Close();
+    }
+
+    void setAnimationTextureProperties(string path)
+    {
+        AssetDatabase.Refresh();
+        TextureImporter texture = AssetImporter.GetAtPath(path) as TextureImporter;
+        texture.filterMode = FilterMode.Point;
+        texture.mipmapEnabled = false;
+        texture.npotScale = TextureImporterNPOTScale.None;
+        AssetDatabase.ImportAsset(path);
+    }
 
     // 骨骼动画纹理
     public void generate(string parentFolder, string savePath, string dataFileName, string matFileName, string prefabFileName, string mainTexPath, GenerateType generateType)
@@ -326,6 +349,8 @@ public class GpuSkinningInstGenerator
 
     public void generateMaterial(string savePath, string matFileName, string mainTexPath)
     {
+        instMaterial = null;
+
         Shader shader;
         switch (genType)
         {
@@ -354,14 +379,14 @@ public class GpuSkinningInstGenerator
                 break;
         }
 
-
-
+        Texture2D saved_animTex = AssetDatabase.LoadAssetAtPath<Texture2D>(animTexturePath);
         // 材质
         if (File.Exists(mainTexPath))
         {
             Texture2D mainTex = AssetDatabase.LoadAssetAtPath<Texture2D>(mainTexPath);
             instMaterial.SetTexture("_MainTex", mainTex);
         }
+        instMaterial.SetTexture("_AnimationTex", saved_animTex);
 
         string matPath = Path.Combine(savePath, matFileName);
         AssetDatabase.CreateAsset(instMaterial, matPath);
@@ -443,8 +468,10 @@ public class GpuSkinningInstGenerator
             }
         }
         tex2D.Apply();
-        byte[] bytes = tex2D.GetRawTextureData();
-        animData.texBytes = bytes;
+        // 导出动画纹理
+        animTexturePath = savePath + dataFileName.Replace(".bytes", "") + ".png";
+        exportTexture(tex2D, animTexturePath);
+        setAnimationTextureProperties(animTexturePath);
 
         // 序列化后存储
         byte[] array = MessagePackSerializer.Serialize(animData);
@@ -459,29 +486,38 @@ public class GpuSkinningInstGenerator
         AssetDatabase.Refresh();
     }
 
-    float convertFloat16BytesToHalf(int data1, int data2)
-    {
-        float result = 16 * (data1 >> 6 & 0x01) + 8 * (data1 >> 5 & 0x01) + 4 * (data1 >> 4 & 0x01) + 2 * (data1 >> 3 & 0x01) + 1 * (data1 >> 2 & 0x01) // 整数部分
-            + 0.5f * (data1 >> 1 & 0x01) + 0.25f * (data1 & 0x01) + 0.125f * (data2 >> 7 & 0x01) + 0.0625f * (data2 >> 6 & 0x01) + 0.03125f * (data2 >> 5 & 0x01)    // 小数部分
-            + 0.015625f * (data2 >> 4 & 0x01) + 0.0078125f * (data2 >> 3 & 0x01) + 0.00390625f * (data2 >> 2 & 0x01) + 0.001953125f * (data2 >> 1 & 0x01) + 0.0009765625f * (data2 & 0x01);
+    //float convertFloat16BytesToHalf(int data1, int data2)
+    //{
+    //    float result = 16 * (data1 >> 6 & 0x01) + 8 * (data1 >> 5 & 0x01) + 4 * (data1 >> 4 & 0x01) + 2 * (data1 >> 3 & 0x01) + 1 * (data1 >> 2 & 0x01) // 整数部分
+    //        + 0.5f * (data1 >> 1 & 0x01) + 0.25f * (data1 & 0x01) + 0.125f * (data2 >> 7 & 0x01) + 0.0625f * (data2 >> 6 & 0x01) + 0.03125f * (data2 >> 5 & 0x01)    // 小数部分
+    //        + 0.015625f * (data2 >> 4 & 0x01) + 0.0078125f * (data2 >> 3 & 0x01) + 0.00390625f * (data2 >> 2 & 0x01) + 0.001953125f * (data2 >> 1 & 0x01) + 0.0009765625f * (data2 & 0x01);
 
-        int flag = (data1 >> 7 & 0x01);
-        result = result - 2 * (1 - flag) * result;      //0: 负  1:正
+    //    int flag = (data1 >> 7 & 0x01);
+    //    result = result - 2 * (1 - flag) * result;      //0: 负  1:正
 
-        return result;
-    }
+    //    return result;
+    //}
 
-    Vector4 convertColors2Halfs(Color color1, Color color2)
-    {
-        return new Vector4(convertFloat16BytesToHalf((int)(color1.r * 255), (int)(color1.g * 255)), convertFloat16BytesToHalf((int)(color1.b * 255), (int)(color1.a * 255)), convertFloat16BytesToHalf((int)(color2.r * 255), (int)(color2.g * 255)), convertFloat16BytesToHalf((int)(color2.b * 255), (int)(color2.a * 255)));
-    }
+    //Vector4 convertColors2Halfs(Color color1, Color color2)
+    //{
+    //    return new Vector4(convertFloat16BytesToHalf((int)(color1.r * 255), (int)(color1.g * 255)), convertFloat16BytesToHalf((int)(color1.b * 255), (int)(color1.a * 255)), convertFloat16BytesToHalf((int)(color2.r * 255), (int)(color2.g * 255)), convertFloat16BytesToHalf((int)(color2.b * 255), (int)(color2.a * 255)));
+    //}
 
 
-
+    // 用一个RGB32像素，存储两个float16数据
     private Color convertFloat16Bytes2Color(byte[] data1, byte[] data2)
     {
         Color color = new Color(data1[0] / 255.0f, data1[1] / 255.0f, data2[0] / 255.0f, data2[1] / 255.0f);
         return color;
+    }
+
+    // 用两个RGB24像素，存储三个float16数据
+    private Color[] convertThreeFloat16Bytes2TwoColor(byte[] data1, byte[] data2, byte[] data3)
+    {
+        Color[] colors = new Color[2];
+        colors[0] = new Color(data1[0] / 255.0f, data1[1] / 255.0f, data2[0] / 255.0f);
+        colors[1] = new Color(data2[1] / 255.0f, data3[0] / 255.0f, data3[1] / 255.0f);
+        return colors;
     }
 
     static List<int> integer_rst = new List<int>();

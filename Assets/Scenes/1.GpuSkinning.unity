@@ -112,85 +112,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &214861219
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5408549930828839665, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_Name
-      value: fbx_soldier_rider_DynPre (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 9.61
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 3.73
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 822031424835334139, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: anim_data_path
-      value: /Resources/Models/soldier_rider/Output/fbx_soldier_rider_Data.bytes
-      objectReference: {fileID: 0}
-    - target: {fileID: 822031424835334139, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: textAsset
-      value: 
-      objectReference: {fileID: 4900000, guid: 7c061693e8ea1084c9297112cab3b037, type: 3}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 896974b1ede7a8c4a97ac2c29769b397, type: 3}
 --- !u!1 &486869599
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,7 +179,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1001 &635513547
 PrefabInstance:
@@ -267,6 +188,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7205475064817880702, guid: 4b40cffa79b6d9543837068d9b5a870a,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7205475064817880702, guid: 4b40cffa79b6d9543837068d9b5a870a,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.15
+      objectReference: {fileID: 0}
     - target: {fileID: 6852954472975132167, guid: 4b40cffa79b6d9543837068d9b5a870a,
         type: 3}
       propertyPath: m_Name
@@ -356,6 +287,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7205475064817880702, guid: 4b40cffa79b6d9543837068d9b5a870a,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6852954472975132167, guid: 4b40cffa79b6d9543837068d9b5a870a,
         type: 3}
       propertyPath: m_Name
@@ -438,85 +374,6 @@ PrefabInstance:
       objectReference: {fileID: 4900000, guid: 6860b8b3d55d6ef409e1e73cba64dee6, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4b40cffa79b6d9543837068d9b5a870a, type: 3}
---- !u!1001 &1416035616
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5408549930828839665, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_Name
-      value: fbx_soldier_rider_DynPre (2)
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.36
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 8.93
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 822031424835334139, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: anim_data_path
-      value: /Resources/Models/soldier_rider/Output/fbx_soldier_rider_Data.bytes
-      objectReference: {fileID: 0}
-    - target: {fileID: 822031424835334139, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: textAsset
-      value: 
-      objectReference: {fileID: 4900000, guid: 7c061693e8ea1084c9297112cab3b037, type: 3}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 896974b1ede7a8c4a97ac2c29769b397, type: 3}
 --- !u!1001 &1535763736
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -524,6 +381,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 7205475064817880702, guid: 4b40cffa79b6d9543837068d9b5a870a,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7205475064817880702, guid: 4b40cffa79b6d9543837068d9b5a870a,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.67
+      objectReference: {fileID: 0}
     - target: {fileID: 6852954472975132167, guid: 4b40cffa79b6d9543837068d9b5a870a,
         type: 3}
       propertyPath: m_Name
@@ -695,84 +562,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &2066730446
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5408549930828839665, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_Name
-      value: fbx_soldier_rider_DynPre
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 6111072392928726037, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 822031424835334139, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: anim_data_path
-      value: /Resources/Models/soldier_rider/Output/fbx_soldier_rider_Data.bytes
-      objectReference: {fileID: 0}
-    - target: {fileID: 822031424835334139, guid: 896974b1ede7a8c4a97ac2c29769b397,
-        type: 3}
-      propertyPath: textAsset
-      value: 
-      objectReference: {fileID: 4900000, guid: 7c061693e8ea1084c9297112cab3b037, type: 3}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 896974b1ede7a8c4a97ac2c29769b397, type: 3}

@@ -45,13 +45,13 @@ public class GpuSkinningInstance : MonoBehaviour {
 
         anim_data = MessagePackSerializer.Deserialize<GpuSkinningAnimData>(textAsset.bytes);
 
-        Texture2D anim_tex = new Texture2D(anim_data.texWidth, anim_data.texHeight, TextureFormat.RGBA32, false, false);
-		anim_tex.filterMode = FilterMode.Point;
-        anim_tex.LoadRawTextureData(anim_data.texBytes);
-        anim_tex.Apply(false);
+        //Texture2D anim_tex = new Texture2D(anim_data.texWidth, anim_data.texHeight, TextureFormat.RGBA32, false, false);
+        //anim_tex.filterMode = FilterMode.Point;
+        //anim_tex.LoadRawTextureData(anim_data.texBytes);
+        //anim_tex.Apply(false);
 
         _material.SetInt("_BoneNum", anim_data.totalBoneNum);
-        _material.SetTexture("_AnimationTex", anim_tex);
+        //_material.SetTexture("_AnimationTex", anim_tex);
         _material.SetVector("_AnimationTexSize", new Vector4(anim_data.texWidth, anim_data.texHeight, 0, 0));
 	}
 

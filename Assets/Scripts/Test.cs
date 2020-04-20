@@ -36,13 +36,13 @@ public class Test : MonoBehaviour {
 
 		anim_data = MessagePackSerializer.Deserialize<GpuSkinningAnimData>(templateObj.GetComponent<GpuSkinningInstance>().textAsset.bytes);
 
-		Texture2D anim_tex = new Texture2D(anim_data.texWidth, anim_data.texHeight, TextureFormat.RGBA32, false, true);
-		anim_tex.filterMode = FilterMode.Point;
-        anim_tex.LoadRawTextureData(anim_data.texBytes);
-        anim_tex.Apply(false, true);
+        //Texture2D anim_tex = new Texture2D(anim_data.texWidth, anim_data.texHeight, TextureFormat.RGBA32, false, true);
+        //anim_tex.filterMode = FilterMode.Point;
+        //anim_tex.LoadRawTextureData(anim_data.texBytes);
+        //anim_tex.Apply(false, true);
 
-		inst_material.SetInt("_BoneNum", anim_data.totalBoneNum);
-		inst_material.SetTexture("_AnimationTex", anim_tex);
+        inst_material.SetInt("_BoneNum", anim_data.totalBoneNum);
+		//inst_material.SetTexture("_AnimationTex", anim_tex);
 		inst_material.SetVector("_AnimationTexSize", new Vector4(anim_data.texWidth, anim_data.texHeight, 1/anim_data.texWidth, 1/anim_data.texHeight));
 
 		uniforms = new MaterialPropertyBlock();
