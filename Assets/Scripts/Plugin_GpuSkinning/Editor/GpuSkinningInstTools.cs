@@ -11,8 +11,9 @@ public class GpuSkinningInstTools : EditorWindow
 	public static readonly string DEFAULT_USE_VERT_SHADER_NAME = "Custom/GpuVerticesAnimation";
 	public static readonly string DEFAULT_USE_SHADER_NAME = "Custom/GpuSkinningAnimation";
 	public static readonly string DEFAULT_USE_INST_SHADER_NAME = "Custom/GpuSkinningAnim_Inst";
-	// 默认存储数据文件名称后缀
-	static readonly string DEFAULT_SAVE_VERT_FILE_NAME = "_VertData.bytes";
+    public static readonly string DEFAULT_USE_NOISE_VERT_SHADER_NAME = "Custom/NoiseGpuVerticesAnimation";
+    // 默认存储数据文件名称后缀
+    static readonly string DEFAULT_SAVE_VERT_FILE_NAME = "_VertData.bytes";
 	static readonly string DEFAULT_SAVE_FILE_NAME = "_Data.bytes";
 	// 默认网格文件名称后缀
 	public static readonly string DEFAULT_SAVE_VERT_MESH_NAME = "_VertMesh.asset";
@@ -21,14 +22,16 @@ public class GpuSkinningInstTools : EditorWindow
 	public static readonly string DEFAULT_SAVE_PREFAB_VERT_NAME = "_VertPre.prefab";
 	public static readonly string DEFAULT_SAVE_PREFAB_NAME = "_DynPre.prefab";
 	public static readonly string DEFAULT_SAVE_PREFAB_INST_NAME = "_InstPre.prefab";
-	// 默认material文件名称后缀
-	public static readonly string DEFAULT_SAVE_MATERIAL_VERT_NAME = "_VertMat.mat";
+    public static readonly string DEFAULT_SAVE_PREFAB_NOISE_VERT_NAME = "_NoiseVertPre.prefab";
+    // 默认material文件名称后缀
+    public static readonly string DEFAULT_SAVE_MATERIAL_VERT_NAME = "_VertMat.mat";
 	public static readonly string DEFAULT_SAVE_MATERIAL_NAME = "_DynMat.mat";
 	public static readonly string DEFAULT_SAVE_MATERIAL_INST_NAME = "_InstMat.mat";
-	// 默认主纹理名称
-	static readonly string DEFAULT_MAIN_TEX_NAME_POSTFIX = ".png";
+    public static readonly string DEFAULT_SAVE_MATERIALNOISE_VERT_NAME = "_NoiseVertMat.mat";
+    // 默认主纹理名称
+    static readonly string DEFAULT_MAIN_TEX_NAME_POSTFIX = ".png";
 	// 生成类型菜单
-	static readonly string[] DEFAULT_GENERATE_TYPE_POPUP = {"vertices animation (顶点动画 自动instance)", "dynamic (骨骼动画 自动instance)", "instance (骨骼动画 强制Instance)"};
+	static readonly string[] DEFAULT_GENERATE_TYPE_POPUP = { "vertices animation (顶点动画 内置instance)", "dynamic (骨骼动画 内置instance)", "instance (骨骼动画 手动Instance)", "noise vertices animation (噪点顶点动画 内置instance)"};
 
 	static string parentFolder;
 
@@ -125,6 +128,15 @@ public class GpuSkinningInstTools : EditorWindow
                             saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIAL_INST_NAME;
                         }
                         break;
+
+                    case GpuSkinningInstGenerator.GenerateType.NoiseVerticesAnim:
+                        {
+                            // 顶点动画纹理
+                            saveName = selectedFbx.name + DEFAULT_SAVE_VERT_FILE_NAME;
+                            savePrefabName = selectedFbx.name + DEFAULT_SAVE_PREFAB_NOISE_VERT_NAME;
+                            saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIALNOISE_VERT_NAME;
+                        }
+                        break;
                 }
 
                 mainTexPath = srcPath + selectedFbx.name + DEFAULT_MAIN_TEX_NAME_POSTFIX;
@@ -184,7 +196,8 @@ public class GpuSkinningInstTools : EditorWindow
 			}
 
 			Directory.CreateDirectory(savePath);
-			if (generateType == GpuSkinningInstGenerator.GenerateType.VerticesAnim)
+			if (generateType==GpuSkinningInstGenerator.GenerateType.VerticesAnim
+                || generateType == GpuSkinningInstGenerator.GenerateType.NoiseVerticesAnim)
 			{
 				// 顶点动画
 				generator.generate_verticesAnim(parentFolder, savePath, saveName, saveMaterialName, savePrefabName, mainTexPath, generateType);

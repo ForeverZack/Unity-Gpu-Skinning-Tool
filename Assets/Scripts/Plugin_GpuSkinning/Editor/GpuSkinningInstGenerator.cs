@@ -25,6 +25,8 @@ public class GpuSkinningInstGenerator
         Dynamic,
         // Instance -- gpu instance
         GpuInstance,
+        // Noise Animation -- 自动instance 噪点顶点动画
+        NoiseVerticesAnim,
     }
 
     // 每根骨骼每帧所占像素空间(0,1:rotation, 2,3:translation)
@@ -113,7 +115,7 @@ public class GpuSkinningInstGenerator
         animData.totalFrame = totalFrame;
         animData.clips = clipsData.ToArray();
 
-        if (genType == GenerateType.VerticesAnim)
+        if (genType==GenerateType.VerticesAnim || genType==GenerateType.NoiseVerticesAnim)
         {
             Mesh mesh = selectedSkinnedMeshRenderer.sharedMesh;
             animData.texWidth = mesh.vertices.Length;
@@ -373,6 +375,14 @@ public class GpuSkinningInstGenerator
             case GenerateType.GpuInstance:
                 {
                     shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_INST_SHADER_NAME);
+                    instMaterial = new Material(shader);
+                    instMaterial.enableInstancing = true;
+                }
+                break;
+
+            case GenerateType.NoiseVerticesAnim:
+                {
+                    shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_NOISE_VERT_SHADER_NAME);
                     instMaterial = new Material(shader);
                     instMaterial.enableInstancing = true;
                 }
@@ -655,7 +665,7 @@ public class GpuSkinningInstGenerator
             instMesh = null;
 
             string meshPath = Path.Combine(Path.GetDirectoryName(savePath), meshName) + GpuSkinningInstTools.DEFAULT_SAVE_MESH_NAME;
-            if (genType == GenerateType.VerticesAnim)
+            if (genType==GenerateType.VerticesAnim || genType==GenerateType.NoiseVerticesAnim)
             {
                 meshPath = Path.Combine(Path.GetDirectoryName(savePath), meshName) + GpuSkinningInstTools.DEFAULT_SAVE_VERT_MESH_NAME;
             }
