@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.IO;
-using MessagePack;
 
 /* 
 使用限制：
@@ -93,7 +92,7 @@ public class GpuSkinningInstGenerator
 
     public void refreshGeneratorInfo()
     {
-        animData = new GpuSkinningAnimData();
+        animData = ScriptableObject.CreateInstance<GpuSkinningAnimData>();
         int totalFrame = 0;
         int clipFrame = 0;
         clipsData.Clear();
@@ -215,20 +214,14 @@ public class GpuSkinningInstGenerator
         }
         tex2D.Apply();
         // 导出动画纹理
-        animTexturePath = savePath + dataFileName.Replace(".bytes", "") + ".png";
+        animTexturePath = savePath + dataFileName.Replace(".asset", "") + ".png";
         exportTexture(tex2D, animTexturePath);
         setAnimationTextureProperties(animTexturePath);
 
-        // 序列化后存储
-        byte[] array = MessagePackSerializer.Serialize(animData);
-        string filePath = Path.Combine(parentFolder, savePath + dataFileName);
-        if (File.Exists(filePath))
-        {
-            File.Delete(filePath);
-        }
-        FileStream fs = new FileStream(filePath, FileMode.Create);
-        fs.Write(array, 0, array.Length);
-        fs.Close();
+        // 存储数据
+        string filePath = savePath + dataFileName;
+        AssetDatabase.CreateAsset(animData, filePath);
+        AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
         // 删除mesh的骨骼信息
@@ -341,7 +334,7 @@ public class GpuSkinningInstGenerator
         MeshRenderer renderer = prefab.AddComponent<MeshRenderer>();
         renderer.sharedMaterial = instMaterial;
         GpuSkinningInstance instance = prefab.AddComponent<GpuSkinningInstance>();
-        instance.textAsset = AssetDatabase.LoadAssetAtPath<TextAsset>(Path.Combine(savePath, dataFileName));
+        instance.textAsset = AssetDatabase.LoadAssetAtPath<GpuSkinningAnimData>(Path.Combine(savePath, dataFileName));
 
         string prefabPath = Path.Combine(savePath, prefabFileName);
         PrefabUtility.CreatePrefab(prefabPath, prefab);
@@ -479,20 +472,14 @@ public class GpuSkinningInstGenerator
         }
         tex2D.Apply();
         // 导出动画纹理
-        animTexturePath = savePath + dataFileName.Replace(".bytes", "") + ".png";
+        animTexturePath = savePath + dataFileName.Replace(".asset", "") + ".png";
         exportTexture(tex2D, animTexturePath);
         setAnimationTextureProperties(animTexturePath);
 
-        // 序列化后存储
-        byte[] array = MessagePackSerializer.Serialize(animData);
-        string filePath = Path.Combine(parentFolder, savePath + dataFileName);
-        if (File.Exists(filePath))
-        {
-            File.Delete(filePath);
-        }
-        FileStream fs = new FileStream(filePath, FileMode.Create);
-        fs.Write(array, 0, array.Length);
-        fs.Close();
+        // 存储
+        string filePath = savePath + dataFileName;
+        AssetDatabase.CreateAsset(animData, filePath);
+        AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
 

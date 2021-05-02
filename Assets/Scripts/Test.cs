@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MessagePack;
 using System.IO;
 
 
@@ -34,7 +33,7 @@ public class Test : MonoBehaviour {
 		inst_material = templateObj.GetComponent<MeshRenderer>().sharedMaterial;
 		inst_mesh = templateObj.GetComponent<MeshFilter>().sharedMesh;
 
-		anim_data = MessagePackSerializer.Deserialize<GpuSkinningAnimData>(templateObj.GetComponent<GpuSkinningInstance>().textAsset.bytes);
+		anim_data = templateObj.GetComponent<GpuSkinningInstance>().textAsset;
 
         //Texture2D anim_tex = new Texture2D(anim_data.texWidth, anim_data.texHeight, TextureFormat.RGBA32, false, true);
         //anim_tex.filterMode = FilterMode.Point;

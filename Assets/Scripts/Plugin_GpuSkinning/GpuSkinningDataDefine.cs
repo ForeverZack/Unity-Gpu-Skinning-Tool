@@ -1,7 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MessagePack;
 
 // shader的uniform location (用于instance的shader)
 public class GpuSkinningUniforms
@@ -15,16 +15,13 @@ public class GpuSkinningUniforms
 }
 
 // 动画clip信息
-[MessagePackObject]
+[Serializable]
 public class GpuSkinningAnimClip
 {
-	[Key(0)]
 	// 名称
 	public string name;
-	[Key(1)]
 	// 起始帧
 	public int startFrame;
-	[Key(2)]
 	// 结束帧
 	public int endFrame;
 
@@ -42,27 +39,14 @@ public class GpuSkinningAnimClip
 }
 
 // 完整的Gpu动画数据
-[MessagePackObject]
-public class GpuSkinningAnimData 
+public class GpuSkinningAnimData : ScriptableObject
 {
 	// 骨骼纹理
-	[Key(0)]
 	public int texWidth;
-	[Key(1)]
 	public int texHeight;
-	[Key(2)]
-	public byte[] texBytes;
-
-	[Key(3)]
 	public GpuSkinningAnimClip[] clips;
-
-	[Key(4)]
 	public int totalFrame;
-	[Key(5)]
 	public int totalBoneNum;
 
-	public GpuSkinningAnimData()
-	{
-	}
 }
 

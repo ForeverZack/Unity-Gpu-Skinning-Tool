@@ -13,8 +13,8 @@ public class GpuSkinningInstTools : EditorWindow
 	public static readonly string DEFAULT_USE_INST_SHADER_NAME = "Custom/GpuSkinningAnim_Inst";
     public static readonly string DEFAULT_USE_NOISE_VERT_SHADER_NAME = "Custom/NoiseGpuVerticesAnimation";
     // 默认存储数据文件名称后缀
-    static readonly string DEFAULT_SAVE_VERT_FILE_NAME = "_VertData.bytes";
-	static readonly string DEFAULT_SAVE_FILE_NAME = "_Data.bytes";
+    static readonly string DEFAULT_SAVE_VERT_FILE_NAME = "_VertData.asset";
+	static readonly string DEFAULT_SAVE_FILE_NAME = "_Data.asset";
 	// 默认网格文件名称后缀
 	public static readonly string DEFAULT_SAVE_VERT_MESH_NAME = "_VertMesh.asset";
 	public static readonly string DEFAULT_SAVE_MESH_NAME = "_Mesh.asset";

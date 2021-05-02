@@ -1,14 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using MessagePack;
 using System.IO;
 
 
 
 public class GpuSkinningInstance : MonoBehaviour {
 
-    public TextAsset textAsset;
+    public GpuSkinningAnimData textAsset;
 
     private Material _material;
 	public Material AnimMaterial
@@ -43,7 +42,7 @@ public class GpuSkinningInstance : MonoBehaviour {
             return;
         }
 
-        anim_data = MessagePackSerializer.Deserialize<GpuSkinningAnimData>(textAsset.bytes);
+        anim_data = textAsset;
 
         //Texture2D anim_tex = new Texture2D(anim_data.texWidth, anim_data.texHeight, TextureFormat.RGBA32, false, false);
         //anim_tex.filterMode = FilterMode.Point;
