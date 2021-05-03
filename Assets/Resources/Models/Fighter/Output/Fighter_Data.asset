@@ -11,12 +11,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
   m_Name: Fighter_Data
-  m_EditorClassIdentifier: Assembly-CSharp::GpuSkinningAnimData
+  m_EditorClassIdentifier: Assembly-CSharp:Framework.GpuSkinning:GpuSkinningAnimData
   texWidth: 256
   texHeight: 256
   clips:
   - name: Take 001
     startFrame: 0
     endFrame: 196
+    frameRate: 30
   totalFrame: 197
   totalBoneNum: 42
