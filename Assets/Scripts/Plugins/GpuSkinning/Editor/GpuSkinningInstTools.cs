@@ -8,31 +8,6 @@ namespace Framework.GpuSkinning
 {
     public class GpuSkinningInstTools : EditorWindow
     {
-
-        // 默认Shader名称
-        public static readonly string DEFAULT_USE_VERT_SHADER_NAME = "Custom/GpuVerticesAnimation";
-        public static readonly string DEFAULT_USE_SHADER_NAME = "Custom/GpuSkinningAnimation";
-        public static readonly string DEFAULT_USE_INST_SHADER_NAME = "Custom/GpuSkinningAnim_Inst";
-        public static readonly string DEFAULT_USE_NOISE_VERT_SHADER_NAME = "Custom/NoiseGpuVerticesAnimation";
-        public static readonly string DEFAULT_USE_MODIFY_MODEL_MAT_VERT_SHADER_NAME = "Custom/ModifyModelMatGpuVerticesAnimation";
-        // 默认存储数据文件名称后缀
-        static readonly string DEFAULT_SAVE_VERT_FILE_NAME = "_VertData.asset";
-        static readonly string DEFAULT_SAVE_FILE_NAME = "_Data.asset";
-        // 默认网格文件名称后缀
-        public static readonly string DEFAULT_SAVE_VERT_MESH_NAME = "_VertMesh.asset";
-        public static readonly string DEFAULT_SAVE_MESH_NAME = "_Mesh.asset";
-        // 默认prefab文件名称后缀
-        public static readonly string DEFAULT_SAVE_PREFAB_VERT_NAME = "_VertPre.prefab";
-        public static readonly string DEFAULT_SAVE_PREFAB_NAME = "_DynPre.prefab";
-        public static readonly string DEFAULT_SAVE_PREFAB_INST_NAME = "_InstPre.prefab";
-        public static readonly string DEFAULT_SAVE_PREFAB_NOISE_VERT_NAME = "_NoiseVertPre.prefab";
-        public static readonly string DEFAULT_SAVE_PREFAB_MODIFY_MODEL_MAT_VERT_NAME = "_ModifyModelMatVertPre.prefab";
-        // 默认material文件名称后缀
-        public static readonly string DEFAULT_SAVE_MATERIAL_VERT_NAME = "_VertMat.mat";
-        public static readonly string DEFAULT_SAVE_MATERIAL_NAME = "_DynMat.mat";
-        public static readonly string DEFAULT_SAVE_MATERIAL_INST_NAME = "_InstMat.mat";
-        public static readonly string DEFAULT_SAVE_MATERIALNOISE_VERT_NAME = "_NoiseVertMat.mat";
-        public static readonly string DEFAULT_SAVE_MATERIAL_MODIFYMODELMAT_VERT_NAME = "_ModifyModelMatVertMat.mat";
         // 默认主纹理名称
         static readonly string DEFAULT_MAIN_TEX_NAME_POSTFIX = ".png";
         // 生成类型菜单
@@ -99,7 +74,6 @@ namespace Framework.GpuSkinning
                     srcPath = AssetDatabase.GetAssetPath(selectedFbx);
                     srcPath = srcPath.Substring(0, srcPath.LastIndexOf("/") + 1);
                     savePath = srcPath + "Output/";
-                    saveName = selectedFbx.name + DEFAULT_SAVE_FILE_NAME;
                     // mesh list
                     skinnedMeshRenderersDict.Clear();
                     SkinnedMeshRenderer[] skinnedMeshRenderers = selectedFbx.GetComponentsInChildren<SkinnedMeshRenderer>();
@@ -115,50 +89,11 @@ namespace Framework.GpuSkinning
                     // 	Debug.LogError(savePath + "---->please choose .FBX file");
                     // 	return;
                     // }
-                    switch (generateType)
-                    {
-                        case GpuSkinningInstGenerator.GenerateType.VerticesAnim:
-                            {
-                                // 顶点动画纹理
-                                saveName = selectedFbx.name + DEFAULT_SAVE_VERT_FILE_NAME;
-                                savePrefabName = selectedFbx.name + DEFAULT_SAVE_PREFAB_VERT_NAME;
-                                saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIAL_VERT_NAME;
-                            }
-                            break;
-
-                        case GpuSkinningInstGenerator.GenerateType.Dynamic:
-                            {
-                                savePrefabName = selectedFbx.name + DEFAULT_SAVE_PREFAB_NAME;
-                                saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIAL_NAME;
-                            }
-                            break;
-
-                        case GpuSkinningInstGenerator.GenerateType.GpuInstance:
-                            {
-                                savePrefabName = selectedFbx.name + DEFAULT_SAVE_PREFAB_INST_NAME;
-                                saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIAL_INST_NAME;
-                            }
-                            break;
-
-                        case GpuSkinningInstGenerator.GenerateType.NoiseVerticesAnim:
-                            {
-                                // 顶点动画纹理
-                                saveName = selectedFbx.name + DEFAULT_SAVE_VERT_FILE_NAME;
-                                savePrefabName = selectedFbx.name + DEFAULT_SAVE_PREFAB_NOISE_VERT_NAME;
-                                saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIALNOISE_VERT_NAME;
-                            }
-                            break;
-
-                        case GpuSkinningInstGenerator.GenerateType.ModifyModelMatrix:
-                            {
-                                // 顶点动画纹理
-                                saveName = selectedFbx.name + DEFAULT_SAVE_VERT_FILE_NAME;
-                                savePrefabName = selectedFbx.name + DEFAULT_SAVE_PREFAB_MODIFY_MODEL_MAT_VERT_NAME;
-                                saveMaterialName = selectedFbx.name + DEFAULT_SAVE_MATERIAL_MODIFYMODELMAT_VERT_NAME;
-                            }
-                            break;
-                    }
-
+                    GpuSkinningInstGenerator.GenerateConfig config = generator.generateConfigs[generateType];
+                    saveName = selectedFbx.name + config.saveDataName;
+                    savePrefabName = selectedFbx.name + config.savePrefabName;
+                    saveMaterialName = selectedFbx.name + config.saveMaterialName;
+  
                     mainTexPath = srcPath + selectedFbx.name + DEFAULT_MAIN_TEX_NAME_POSTFIX;
 
                     refreshPanel(selectedFbx);
@@ -216,9 +151,8 @@ namespace Framework.GpuSkinning
                 }
 
                 Directory.CreateDirectory(savePath);
-                if (generateType == GpuSkinningInstGenerator.GenerateType.VerticesAnim
-                    || generateType == GpuSkinningInstGenerator.GenerateType.NoiseVerticesAnim
-                    || generateType == GpuSkinningInstGenerator.GenerateType.ModifyModelMatrix)
+                GpuSkinningInstGenerator.GenerateConfig config = generator.generateConfigs[generateType];
+                if (config.animationType == GpuSkinningInstGenerator.AnimationType.Vertices)
                 {
                     // 顶点动画
                     generator.generate_verticesAnim(parentFolder, savePath, saveName, saveMaterialName, savePrefabName, mainTexPath, generateType);

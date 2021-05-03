@@ -16,6 +16,14 @@ namespace Framework.GpuSkinning
 {
     public class GpuSkinningInstGenerator
     {
+        // 动画类型
+        public enum AnimationType
+        {
+            // 顶点动画
+            Vertices = 0,
+            // 骨骼动画
+            Skeleton,
+        };
         // 生成类型
         public enum GenerateType
         {
@@ -30,6 +38,40 @@ namespace Framework.GpuSkinning
             // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
             ModifyModelMatrix,
         }
+        // 生成类型的配置
+        public class GenerateConfig
+        {
+            // 动画类型
+            public AnimationType animationType;
+            // shader名称
+            public string shaderName;
+            // 存储data名称后缀
+            public string saveDataName;
+            // 存储prefab名称后缀
+            public string savePrefabName;
+            // 存储material名称后缀
+            public string saveMaterialName;
+            // 存储mesh名称后缀
+            public string saveMeshName;
+
+            public GenerateConfig(AnimationType at, string sn, string sdn, string spn, string smn, string smen)
+            {
+                animationType = at;
+                shaderName = sn;
+                saveDataName = sdn;
+                savePrefabName = spn;
+                saveMaterialName = smn;
+                saveMeshName = smen;
+            }
+        }
+        // 配置
+        public Dictionary<GenerateType, GenerateConfig> generateConfigs = new Dictionary<GenerateType, GenerateConfig> {
+            { GenerateType.VerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/GpuVerticesAnimation", "_VertData.asset", "_VertPre.prefab", "_VertMat.mat", "_VertMesh.asset") },    // Vertics Animation -- 自动instance 顶点动画
+            { GenerateType.Dynamic, new GenerateConfig(AnimationType.Skeleton, "Custom/GpuSkinningAnimation", "_Data.asset", "_DynPre.prefab", "_DynMat.mat", "_Mesh.asset") },    // Dynamic -- 自动instance 骨骼动画
+            { GenerateType.GpuInstance, new GenerateConfig(AnimationType.Skeleton, "Custom/GpuSkinningAnim_Inst", "_Data.asset", "_InstPre.prefab", "_InstMat.mat", "_Mesh.asset") },      // Instance -- gpu instance
+            { GenerateType.NoiseVerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/NoiseGpuVerticesAnimation", "_VertData.asset", "_NoiseVertPre.prefab", "_NoiseVertMat.mat", "_VertMesh.asset") },  // Noise Animation -- 自动instance 噪点顶点动画
+            { GenerateType.ModifyModelMatrix, new GenerateConfig(AnimationType.Vertices, "Custom/ModifyModelMatGpuVerticesAnimation", "_VertData.asset", "_ModifyModelMatVertPre.prefab", "_ModifyModelMatVertMat.mat", "_VertMesh.asset") },    // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
+        };
 
         // 每根骨骼每帧所占像素空间(0,1:rotation, 2,3:translation)
         static readonly int DEFAULT_PER_FRAME_BONE_DATASPACE = 4;
@@ -117,14 +159,17 @@ namespace Framework.GpuSkinning
             animData.totalFrame = totalFrame;
             animData.clips = clipsData.ToArray();
 
-            if (genType == GenerateType.VerticesAnim || genType == GenerateType.NoiseVerticesAnim || genType==GenerateType.ModifyModelMatrix)
+            GenerateConfig config = generateConfigs[genType];
+            if (config.animationType == AnimationType.Vertices)
             {
+                // 顶点动画
                 Mesh mesh = selectedSkinnedMeshRenderer.sharedMesh;
                 animData.texWidth = mesh.vertices.Length;
                 animData.texHeight = totalFrame * 2; // vec3需要两个像素表示(rgba32->float16)
             }
             else
             {
+                // 骨骼动画
                 long totalPixels = boneIds.Count * DEFAULT_PER_FRAME_BONE_DATASPACE * totalFrame;
                 calTextureSize(totalPixels, out animData.texWidth, out animData.texHeight);
             }
@@ -359,49 +404,10 @@ namespace Framework.GpuSkinning
         {
             instMaterial = null;
 
-            Shader shader;
-            switch (genType)
-            {
-                case GenerateType.VerticesAnim:
-                    {
-                        shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_VERT_SHADER_NAME);
-                        instMaterial = new Material(shader);
-                        instMaterial.enableInstancing = true;
-                    }
-                    break;
-
-                case GenerateType.Dynamic:
-                    {
-                        shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_SHADER_NAME);
-                        instMaterial = new Material(shader);
-                        instMaterial.enableInstancing = true;
-                    }
-                    break;
-
-                case GenerateType.GpuInstance:
-                    {
-                        shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_INST_SHADER_NAME);
-                        instMaterial = new Material(shader);
-                        instMaterial.enableInstancing = true;
-                    }
-                    break;
-
-                case GenerateType.NoiseVerticesAnim:
-                    {
-                        shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_NOISE_VERT_SHADER_NAME);
-                        instMaterial = new Material(shader);
-                        instMaterial.enableInstancing = true;
-                    }
-                    break;
-
-                case GenerateType.ModifyModelMatrix:
-                    {
-                        shader = Shader.Find(GpuSkinningInstTools.DEFAULT_USE_MODIFY_MODEL_MAT_VERT_SHADER_NAME);
-                        instMaterial = new Material(shader);
-                        instMaterial.enableInstancing = true;
-                    }
-                    break;
-            }
+            GenerateConfig config = generateConfigs[genType];
+            Shader shader = Shader.Find(config.shaderName);
+            instMaterial = new Material(shader);
+            instMaterial.enableInstancing = true;
 
             Texture2D saved_animTex = AssetDatabase.LoadAssetAtPath<Texture2D>(animTexturePath);
             // 材质
@@ -672,11 +678,8 @@ namespace Framework.GpuSkinning
                 string meshName = sm.sharedMesh.name;
                 instMesh = null;
 
-                string meshPath = Path.Combine(Path.GetDirectoryName(savePath), meshName) + GpuSkinningInstTools.DEFAULT_SAVE_MESH_NAME;
-                if (genType == GenerateType.VerticesAnim || genType == GenerateType.NoiseVerticesAnim || genType == GenerateType.ModifyModelMatrix)
-                {
-                    meshPath = Path.Combine(Path.GetDirectoryName(savePath), meshName) + GpuSkinningInstTools.DEFAULT_SAVE_VERT_MESH_NAME;
-                }
+                GenerateConfig config = generateConfigs[genType];
+                string meshPath = Path.Combine(Path.GetDirectoryName(savePath), meshName) + config.saveMeshName;
                 if (File.Exists(parentFolder + meshPath.Replace("\\", "/")))
                 {
                     AssetDatabase.DeleteAsset(meshPath);
