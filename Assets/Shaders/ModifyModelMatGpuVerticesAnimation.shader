@@ -1,29 +1,7 @@
-﻿// Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
-
-// Unlit shader. Simplest possible textured shader.
-// - no lighting
-// - no lightmap support
-// - no per-material color
-
-Shader "Custom/ModifyModelMatGpuVerticesAnimation" {
+﻿Shader "Custom/ModifyModelMatGpuVerticesAnimation" {
 Properties {
 	_MainTex("MainTex", 2D) = "white" {}
 	_AnimationTex("AnimationTex", 2D) = "white" {}
-	_FogTex("Fog Texture", 2D) = "white" {}
-	_ColorMaskTex("ColorMask Texture", 2D) = "white" {}
- 
-	// _MaskTex("MaskTex",2D) = "black"{} 
-    _Opacity("_Opacity", Float) = 1.0
-
-	// Light
-	_AmbientColor("AmbientColor",Color) = (0.863,0.863,0.863,1)
-	_LightDir("LightDir", vector) = (-400, 1000, 200, 1)
-	_LightColor("LightColor", Color) = (0.64,0.64,0.64,1)
-	_LightIntensity("LightIntensity",Float) = 1.2
-	//_Gloss("Gloss",Float) = 8
-	_SpecPower("Spec Power", Range(0.0, 40)) = 24
-	_SpecStrength("Spec Strength", Range(0.0, 2)) = 0.5
-
 }
 
 	SubShader{
@@ -52,8 +30,6 @@ Properties {
 				struct v2f {
 					half4 vertex : SV_POSITION;
 					float2 texcoord : TEXCOORD0;
-					UNITY_FOG_COORDS(1)
-					fixed3 maskCol : TEXCOORD2;
 				};
 
 				sampler2D _AnimationTex;
@@ -85,19 +61,6 @@ Properties {
 
 				sampler2D _MainTex;
 				half4 _MainTex_ST;
-				fixed _Opacity;
-
-				sampler2D _ColorMaskTex;
-				float4 _ColorMaskTex_TexelSize;	// x contains 1.0 / width; y contains 1.0 / height; z contains width; w contains height
-
-
-				fixed4 _AmbientColor;
-				float4 _LightDir;	// world-space
-				half _LightIntensity;
-				fixed4 _LightColor;
-				//half _Gloss;
-				fixed _SpecPower;
-				fixed _SpecStrength;
 
 				v2f vert(appdata_t v)
 				{
@@ -136,9 +99,6 @@ Properties {
 					float4 worldPos  = mul(modelMat, pos);
 					o.vertex = mul(UNITY_MATRIX_VP, worldPos);
 					o.texcoord = TRANSFORM_TEX(v.texcoord, _MainTex);
-
-					float4 maskColorUV = float4((colorIndex+0.5)*_ColorMaskTex_TexelSize.x, 0.5, 0, 0);
-					o.maskCol = tex2Dlod(_ColorMaskTex, maskColorUV);
 
 					return o;
 				}
