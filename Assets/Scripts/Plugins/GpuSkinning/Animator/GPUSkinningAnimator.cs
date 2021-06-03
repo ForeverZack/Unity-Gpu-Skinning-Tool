@@ -11,7 +11,6 @@ namespace Framework.GpuSkinning
     {
         public Material mat;
         public Mesh lowMesh;
-        public Material shadowMat;
         public GpuSkinningAnimData textAsset;
 
         [HideInInspector]
@@ -98,21 +97,6 @@ namespace Framework.GpuSkinning
             m_colorIndex = colorIndex/100f;
         }
 
-        public void SetShadowColor(Color color)
-        {
-            shadowMat.SetColor("_ShadowColor", color);
-        }
-
-        public void SetShadowOffset(Vector4 offset)
-        {
-             shadowMat.SetVector("_ShadowOffset", offset);
-        }
-
-        public void SetShadowHeight(float value)
-        {
-            shadowMat.SetFloat("_ShadowHeight", value);
-        }
-
         void OnUpdate()
         {
             if (isPlayTriggerAni && Time.time-m_startTime>=m_animationLength)
@@ -125,35 +109,10 @@ namespace Framework.GpuSkinning
                 }
             }
         }
-        public void ShowShadow()
-        {
-            m_shadowVisible = true;
-
-            if (meshRenderer.materials.Length < 2)
-            {
-                Material[] materials = new Material[2];
-                materials[0] = mat;
-                materials[1] = shadowMat;
-                meshRenderer.materials = materials;
-            }
-        }
-        public void HideShadow()
-        {
-            m_shadowVisible = false;
-
-            meshRenderer.materials = new Material[0];
-            meshRenderer.material = mat;
-        }
-
 
         public void SetQueue(int queue)
         {
             mat.renderQueue = queue;
-        }
-
-        public void SetShadowQueue(int queue)
-        {
-            shadowMat.renderQueue = queue;
         }
 
         public void PlayAnimation(string animName, bool loop = false, float blendDuration = 0.1f,  Action onEndHandler = null)

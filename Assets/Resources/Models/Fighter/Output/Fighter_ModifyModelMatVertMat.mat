@@ -20,7 +20,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AnimationTex:
-        m_Texture: {fileID: 2800000, guid: b3274cf553bc7d840a49ebc84c936a92, type: 3}
+        m_Texture: {fileID: 2800000, guid: 209881fc97768ce41ab8d47f68184dc7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ColorMaskTex:

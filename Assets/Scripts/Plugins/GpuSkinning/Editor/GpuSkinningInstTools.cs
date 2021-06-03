@@ -44,6 +44,8 @@ namespace Framework.GpuSkinning
         string[] skinnedMeshRendererNames = new string[0];
         int selectedSkinnedMeshRenderer = 0;
         int lastSelectedSkinnedMeshRenderer = 0;
+        // 压缩倍数
+        float compression = 1.0f;
 
 
 
@@ -115,6 +117,7 @@ namespace Framework.GpuSkinning
                 Debug.Log(lastSelectedSkinnedMeshRenderer);
                 refreshPanel(selectedFbx);
             }
+            compression = EditorGUILayout.FloatField("压缩率:", compression);
 
             EditorGUILayout.BeginVertical(EditorStyles.textField);
             EditorGUILayout.LabelField(string.Format("输出路径:{0}", savePath));
@@ -193,7 +196,7 @@ namespace Framework.GpuSkinning
         private void refreshPanel(GameObject selectedFbx)
         {
             GetAnimClips(selectedFbx);
-            generator.setSelectedModel(selectedFbx, generateType, m_clipList, skinnedMeshRenderersDict[skinnedMeshRendererNames[selectedSkinnedMeshRenderer]]);
+            generator.setSelectedModel(selectedFbx, generateType, m_clipList, skinnedMeshRenderersDict[skinnedMeshRendererNames[selectedSkinnedMeshRenderer]], compression);
         }
 
         private string convertGpuSkinningAnimData2Str(GpuSkinningAnimData data)

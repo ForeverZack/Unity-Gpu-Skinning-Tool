@@ -34,9 +34,9 @@ Material:
     m_Floats:
     - _BlendFrameIndex: 0
     - _BlendProgress: 0
-    - _BoneNum: 0
-    - _FrameIndex: 0
+    - _BoneNum: 42
+    - _FrameIndex: 68
     - _PerPixelWorldSize: 0.25
     m_Colors:
-    - _AnimationTexSize: {r: 0, g: 0, b: 0, a: 0}
+    - _AnimationTexSize: {r: 1721, g: 196, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}

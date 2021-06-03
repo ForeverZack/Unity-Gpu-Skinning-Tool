@@ -95,6 +95,7 @@ namespace Framework.GpuSkinning
         Dictionary<Transform, int> boneIds = null;
         Dictionary<int, Matrix4x4> boneBindposes = null;
         string animTexturePath; // 动画纹理保存路径
+        float compression = 1f;
 
         public GpuSkinningInstGenerator()
         {
@@ -116,7 +117,7 @@ namespace Framework.GpuSkinning
         }
 
         // 设置选中的模型
-        public void setSelectedModel(GameObject obj, GenerateType type, List<AnimationClip> clips, SkinnedMeshRenderer skinnedMeshRenderer)
+        public void setSelectedModel(GameObject obj, GenerateType type, List<AnimationClip> clips, SkinnedMeshRenderer skinnedMeshRenderer, float compress)
         {
             if (obj == null)
             {
@@ -125,12 +126,13 @@ namespace Framework.GpuSkinning
                 return;
             }
 
-            if (curGameObject != obj || animData == null || genType != type || skinnedMeshRenderer != selectedSkinnedMeshRenderer)
+            if (curGameObject != obj || animData == null || genType != type || skinnedMeshRenderer != selectedSkinnedMeshRenderer || compress!=compression)
             {
                 genType = type;
                 curGameObject = obj;
                 clipList = clips;
                 selectedSkinnedMeshRenderer = skinnedMeshRenderer;
+                compression = compress;
                 refreshGeneratorInfo();
             }
         }
@@ -149,9 +151,9 @@ namespace Framework.GpuSkinning
             for (int i = 0; i < animClips.Length; ++i)
             {
                 AnimationClip clip = animClips[i];
-                clipFrame = (int)(clip.frameRate * clip.length);
+                clipFrame = (int)(clip.frameRate * clip.length / compression);
 
-                GpuSkinningAnimClip clipData = new GpuSkinningAnimClip(clip.name, totalFrame, totalFrame + clipFrame - 1);
+                GpuSkinningAnimClip clipData = new GpuSkinningAnimClip(clip.name, totalFrame, totalFrame+clipFrame-1, clip.frameRate/compression);
                 clipsData.Add(clipData);
 
                 totalFrame += clipFrame;
@@ -236,7 +238,7 @@ namespace Framework.GpuSkinning
                 clip = animClips[clipIdx];
                 for (int frameIndex = 0; frameIndex < boneAnimation.Length(); frameIndex++)
                 {
-                    boneMatrices = samplerAnimationClipBoneMatrices(curGameObject, clip, (float)frameIndex / clip.frameRate);
+                    boneMatrices = samplerAnimationClipBoneMatrices(curGameObject, clip, (float)frameIndex / (clip.frameRate/compression));
                     for (int vertexIndex = 0; vertexIndex < instMesh.vertices.Length; ++vertexIndex)
                     {
                         src_vertex = instMesh.vertices[vertexIndex];
