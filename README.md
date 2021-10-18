@@ -11,7 +11,7 @@
 同时，这个场景也示范了对动画关键帧的压缩，这里以2倍的压缩率(也就是15fps)运行，动画依旧流畅。<br>
 
 ## 效果截图：
-![img](https://https://github.com/ForeverZack/Unity-Gpu-Skinning-Tool/master/manual/pic/modifyTransform.gif)
+![img](https://github.com/ForeverZack/Unity-Gpu-Skinning-Tool/blob/master/manual/pic/modifyTransform.gif)
 
 ## 2021/06/03 更新
 增加对动画帧率的压缩，目前只有第5个场景里的prefab支持，因为其中有完整的通过帧率压缩来计算当前关键帧，以及到下一个关键帧之间的混合百分比。
