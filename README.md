@@ -10,6 +10,9 @@
 第五个场景示范了通过修改模型的变换信息，再在shader中去提取动画帧，以让不同的模型实例处于不同的动画帧，并且该方法支持补帧，不同关键帧之间衔接会更加流畅。
 同时，这个场景也示范了对动画关键帧的压缩，这里以2倍的压缩率(也就是15fps)运行，动画依旧流畅。<br>
 
+## 效果截图：
+![ModifyTransform](https://https://github.com/ForeverZack/Unity-Gpu-Skinning-Tool/master/manual/pic/modifyTransform.gif)
+
 ## 2021/06/03 更新
 增加对动画帧率的压缩，目前只有第5个场景里的prefab支持，因为其中有完整的通过帧率压缩来计算当前关键帧，以及到下一个关键帧之间的混合百分比。
 其他几个场景都是直接设置shader的FrameIndex的，没有根据动画的帧率做换算。另外，渲染骨骼动画的话，还没有处理。 <br>
