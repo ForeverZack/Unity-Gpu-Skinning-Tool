@@ -67,6 +67,9 @@ namespace Framework.GpuSkinning
         public int totalFrame;
         // 骨骼数量
         public int totalBoneNum;
+        // 数据范围
+        public float min;
+        public float max;
 
         private Dictionary<string, GpuSkinningAnimClip> animClipsDict = null;
         public Dictionary<string, GpuSkinningAnimClip> getAnimationClipsDict()
