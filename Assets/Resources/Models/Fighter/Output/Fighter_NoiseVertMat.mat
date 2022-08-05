@@ -20,7 +20,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _AnimationTex:
-        m_Texture: {fileID: 2800000, guid: b3274cf553bc7d840a49ebc84c936a92, type: 3}
+        m_Texture: {fileID: 2800000, guid: d64454f9a57f18a43a8b3cf1d38e51ec, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _FrameIndexTex:
@@ -34,9 +34,10 @@ Material:
     m_Floats:
     - _BlendFrameIndex: 0
     - _BlendProgress: 0
-    - _BoneNum: 42
-    - _FrameIndex: 68
+    - _BoneNum: 0
+    - _FrameIndex: 0
     - _PerPixelWorldSize: 0.25
     m_Colors:
-    - _AnimationTexSize: {r: 1721, g: 196, b: 0, a: 0}
+    - _AnimationTexSize: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

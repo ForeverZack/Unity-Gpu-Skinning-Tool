@@ -264,9 +264,11 @@ namespace Framework.GpuSkinning
             }
             tex2D.Apply();
             // 导出动画纹理
-            animTexturePath = savePath + dataFileName.Replace(".asset", "") + ".png";
-            exportTexture(tex2D, animTexturePath);
-            setAnimationTextureProperties(animTexturePath);
+//            animTexturePath = savePath + dataFileName.Replace(".asset", "") + ".png";
+//            exportTexture(tex2D, animTexturePath);
+//            setAnimationTextureProperties(animTexturePath);
+            animTexturePath = Path.Combine(Path.GetDirectoryName(savePath), dataFileName.Replace(".asset", "")) + ".animMap.asset";
+            exportTextureAsset(tex2D, animTexturePath);
 
             // 存储数据
             string filePath = savePath + dataFileName;
@@ -343,6 +345,13 @@ namespace Framework.GpuSkinning
             FileStream fs = new FileStream(path, FileMode.Create);
             fs.Write(bytes, 0, bytes.Length);
             fs.Close();
+        }
+        
+        void exportTextureAsset(Texture2D texture, string path)
+        {
+            AssetDatabase.CreateAsset(texture, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         void setAnimationTextureProperties(string path)
@@ -501,9 +510,11 @@ namespace Framework.GpuSkinning
             }
             tex2D.Apply();
             // 导出动画纹理
-            animTexturePath = savePath + dataFileName.Replace(".asset", "") + ".png";
-            exportTexture(tex2D, animTexturePath);
-            setAnimationTextureProperties(animTexturePath);
+//            animTexturePath = Path.Combine(Path.GetDirectoryName(savePath) + dataFileName.Replace(".asset", ""), ".animMap.asset");
+//            exportTexture(tex2D, animTexturePath);
+//            setAnimationTextureProperties(animTexturePath);
+            animTexturePath = Path.Combine(Path.GetDirectoryName(savePath), dataFileName.Replace(".asset", "")) + ".animMap.asset";
+            exportTextureAsset(tex2D, animTexturePath);
 
             // 存储
             string filePath = savePath + dataFileName;

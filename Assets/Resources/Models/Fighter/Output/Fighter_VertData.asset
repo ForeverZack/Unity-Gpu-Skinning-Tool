@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 8c9d1c53a1b58d646b4099c38f425edd, type: 3}
   m_Name: Fighter_VertData
-  m_EditorClassIdentifier: Assembly-CSharp:Framework.GpuSkinning:GpuSkinningAnimData
+  m_EditorClassIdentifier: 
   texWidth: 1721
   texHeight: 394
   clips:
@@ -21,3 +21,5 @@ MonoBehaviour:
     frameRate: 30
   totalFrame: 197
   totalBoneNum: 42
+  min: 0
+  max: 0

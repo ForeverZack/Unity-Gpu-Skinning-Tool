@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 502404222745116657}
-  m_Mesh: {fileID: 4300000, guid: 684c5d9a755e94d4dab3d86bb6777ca1, type: 2}
+  m_Mesh: {fileID: 0}
 --- !u!23 &6143483517521568
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -55,6 +55,8 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -66,10 +68,11 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_StitchLightmapSeams: 0
+  m_StitchLightmapSeams: 1
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -78,6 +81,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &8525694890810642539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,5 +96,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mat: {fileID: 2100000, guid: 9548bee563c507f4a9893e2eb577ee11, type: 2}
   lowMesh: {fileID: 4300000, guid: 684c5d9a755e94d4dab3d86bb6777ca1, type: 2}
-  textAsset: {fileID: 11400000, guid: 25931d6cbc6e8ea438a0b59fd85cb0e4, type: 2}
+  textAsset: {fileID: 11400000, guid: 9d3497924905df3449042abaf9eb0080, type: 2}
   animData: {fileID: 0}
