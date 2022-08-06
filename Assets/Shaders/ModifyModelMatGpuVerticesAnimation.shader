@@ -50,9 +50,9 @@ Properties {
 				float4 convertColors2Halfs(float3 color1, float3 color2)
 				{
 					return float4(convertFloat16BytesToHalf(floor(color1.r * 255 + 0.5), floor(color1.g * 255 + 0.5))
-										, convertFloat16BytesToHalf(floor(color1.b * 255 + 0.5), floor(color2.r * 255 + 0.5))
-										, convertFloat16BytesToHalf(floor(color2.g * 255 + 0.5), floor(color2.b * 255 + 0.5))
-										, 1);
+								, convertFloat16BytesToHalf(floor(color1.b * 255 + 0.5), floor(color2.r * 255 + 0.5))
+								, convertFloat16BytesToHalf(floor(color2.g * 255 + 0.5), floor(color2.b * 255 + 0.5))
+								, 1);
 				}
 
 				#include "UnityCG.cginc"
@@ -68,7 +68,7 @@ Properties {
 
 					v2f o;
 
-					float4x4 modelMat = unity_ObjectToWorld;
+					float4x4 modelMat = UNITY_MATRIX_M;
 					float scaleY = modelMat[1][1];
 					float scaleZ = length(float3(modelMat[0][2], modelMat[1][2], modelMat[2][2]));
 
@@ -86,13 +86,11 @@ Properties {
 					modelMat[2][2] = modelMat[0][0] * scaleXFlag;
 
 					float vertexIndex = v.vertIndex[0] + 0.5;	// 采样要做半个像素的偏移
-					float4 vertexUV1 = float4((vertexIndex) / _AnimationTex_TexelSize.z, (frameIndex * 2 + 0.5) / _AnimationTex_TexelSize.w, 0, 0);
-					float4 vertexUV2 = float4((vertexIndex) / _AnimationTex_TexelSize.z, (frameIndex * 2 + 1.5) / _AnimationTex_TexelSize.w, 0, 0);
-					float4 pos = convertColors2Halfs(tex2Dlod(_AnimationTex, vertexUV1), tex2Dlod(_AnimationTex, vertexUV2));
+					float4 vertexUV1 = float4((vertexIndex) / _AnimationTex_TexelSize.z, (frameIndex + 0.5) / _AnimationTex_TexelSize.w, 0, 0);
+					float4 pos = tex2Dlod(_AnimationTex, vertexUV1);
 
-					float4 blend_vertexUV1 = float4(vertexIndex / _AnimationTex_TexelSize.z, (blendFrameIndex * 2 + 0.5) / _AnimationTex_TexelSize.w, 0, 0);
-					float4 blend_vertexUV2 = float4(vertexIndex / _AnimationTex_TexelSize.z, (blendFrameIndex * 2 + 1.5) / _AnimationTex_TexelSize.w, 0, 0);
-					float4 blend_pos = convertColors2Halfs(tex2Dlod(_AnimationTex, blend_vertexUV1), tex2Dlod(_AnimationTex, blend_vertexUV2));
+					float4 blend_vertexUV1 = float4(vertexIndex / _AnimationTex_TexelSize.z, (blendFrameIndex + 0.5) / _AnimationTex_TexelSize.w, 0, 0);
+					float4 blend_pos = tex2Dlod(_AnimationTex, blend_vertexUV1);
 
 					pos = lerp(pos, blend_pos, blendProgress);
 

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Fighter_Data
   m_EditorClassIdentifier: 
   texWidth: 256
-  texHeight: 256
+  texHeight: 128
   clips:
   - name: Take 001
     startFrame: 0

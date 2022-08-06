@@ -46,6 +46,9 @@ namespace Framework.GpuSkinning
         int lastSelectedSkinnedMeshRenderer = 0;
         // 压缩倍数
         float compression = 1.0f;
+        // 模型的动画列表
+        string[] animationNames = new string[0];
+        int selectedAnimation = 0;
 
 
 
@@ -54,6 +57,8 @@ namespace Framework.GpuSkinning
         [MenuItem("Window/GpuSkinningTool")]
         private static void ShowWindow()
         {
+            GetWindow<GpuSkinningInstTools>().Close();
+            
             parentFolder = Application.dataPath.Replace("Assets", "");
             var window = GetWindow<GpuSkinningInstTools>();
             window.minSize = new Vector2(600, 800);
@@ -97,6 +102,33 @@ namespace Framework.GpuSkinning
                     saveMaterialName = selectedFbx.name + config.saveMaterialName;
   
                     mainTexPath = srcPath + selectedFbx.name + DEFAULT_MAIN_TEX_NAME_POSTFIX;
+                    
+                    // animation list
+                    List<string> animationNameList = new List<string>();
+                    string assetPath = AssetDatabase.GetAssetPath(selectedFbx);
+                    UnityEngine.Object[] objs = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+                    AnimationClip clip;
+                    for (int i = 0; i < objs.Length; i++)
+                    {
+                        if (objs[i] is AnimationClip)
+                        {
+                            if (objs[i].hideFlags == (HideFlags.HideInHierarchy | HideFlags.NotEditable))
+                                continue;
+
+                            clip = objs[i] as AnimationClip;
+                            animationNameList.Add(clip.name);
+                        }
+                    }
+                    animationNames = animationNameList.ToArray();
+                    selectedAnimation = 0;
+                    for (int i=0; i<animationNames.Length; ++i)
+                    {
+                        if (animationNames[i].Contains("daiji01") || animationNames[i].Contains("idle"))
+                        {
+                            selectedAnimation = i;
+                            break;
+                        }
+                    }
 
                     refreshPanel(selectedFbx);
                 }
@@ -116,6 +148,10 @@ namespace Framework.GpuSkinning
                 lastSelectedSkinnedMeshRenderer = selectedSkinnedMeshRenderer;
                 Debug.Log(lastSelectedSkinnedMeshRenderer);
                 refreshPanel(selectedFbx);
+            }
+            if (generateType == GpuSkinningInstGenerator.GenerateType.VerticesAnim)
+            {
+                selectedAnimation = EditorGUILayout.Popup("请选择默认的模型姿态: ", selectedAnimation, animationNames);
             }
             compression = EditorGUILayout.FloatField("压缩率:", compression);
 
@@ -144,7 +180,7 @@ namespace Framework.GpuSkinning
 
             if (GUILayout.Button("刷新"))
             {
-                refreshPanel(selectedFbx);
+                refreshPanel(selectedFbx, true);
             }
             if (GUILayout.Button("生成"))
             {
@@ -158,7 +194,7 @@ namespace Framework.GpuSkinning
                 if (config.animationType == GpuSkinningInstGenerator.AnimationType.Vertices)
                 {
                     // 顶点动画
-                    generator.generate_verticesAnim(parentFolder, savePath, saveName, saveMaterialName, savePrefabName, mainTexPath, generateType);
+                    generator.generate_verticesAnim(parentFolder, savePath, saveName, saveMaterialName, savePrefabName, mainTexPath, generateType, animationNames[selectedAnimation]);
                 }
                 else
                 {
@@ -193,10 +229,10 @@ namespace Framework.GpuSkinning
             }
         }
 
-        private void refreshPanel(GameObject selectedFbx)
+        private void refreshPanel(GameObject selectedFbx, bool forceUpdate = false)
         {
             GetAnimClips(selectedFbx);
-            generator.setSelectedModel(selectedFbx, generateType, m_clipList, skinnedMeshRenderersDict[skinnedMeshRendererNames[selectedSkinnedMeshRenderer]], compression);
+            generator.setSelectedModel(selectedFbx, generateType, m_clipList, skinnedMeshRenderersDict[skinnedMeshRendererNames[selectedSkinnedMeshRenderer]], compression, forceUpdate);
         }
 
         private string convertGpuSkinningAnimData2Str(GpuSkinningAnimData data)

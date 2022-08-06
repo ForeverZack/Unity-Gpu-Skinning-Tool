@@ -93,12 +93,10 @@ Shader "Custom/GpuVerticesAnimation" {
 					//int vertexIndex = vid;
 					float vertexIndex = v.vertIndex[0] + 0.5;	// 采样要做半个像素的偏移
 					float4 vertexUV1 = float4((vertexIndex) / _AnimationTexSize.x, (_FrameIndex * 2 + 0.5) / _AnimationTexSize.y, 0, 0);
-					float4 vertexUV2 = float4((vertexIndex) / _AnimationTexSize.x, (_FrameIndex * 2 + 1.5) / _AnimationTexSize.y, 0, 0);
-					float4 pos = convertColors2Halfs(tex2Dlod(_AnimationTex, vertexUV1), tex2Dlod(_AnimationTex, vertexUV2));
+					float4 pos = tex2Dlod(_AnimationTex, vertexUV1);
 
 					float4 blend_vertexUV1 = float4(vertexIndex / _AnimationTexSize.x, (_BlendFrameIndex * 2 + 0.5) / _AnimationTexSize.y, 0, 0);
-					float4 blend_vertexUV2 = float4(vertexIndex / _AnimationTexSize.x, (_BlendFrameIndex * 2 + 1.5) / _AnimationTexSize.y, 0, 0);
-					float4 blend_pos = convertColors2Halfs(tex2Dlod(_AnimationTex, blend_vertexUV1), tex2Dlod(_AnimationTex, blend_vertexUV2));
+					float4 blend_pos = tex2Dlod(_AnimationTex, blend_vertexUV1);
 
 					pos = lerp(pos, blend_pos, _BlendProgress);
 

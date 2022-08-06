@@ -74,7 +74,7 @@ namespace Framework.GpuSkinning
         };
 
         // 每根骨骼每帧所占像素空间(0,1:rotation, 2,3:translation)
-        static readonly int DEFAULT_PER_FRAME_BONE_DATASPACE = 4;
+        static readonly int DEFAULT_PER_FRAME_BONE_DATASPACE = 2;
 
         public GameObject curGameObject = null;
         public RuntimeAnimatorController controller = null;
@@ -117,7 +117,7 @@ namespace Framework.GpuSkinning
         }
 
         // 设置选中的模型
-        public void setSelectedModel(GameObject obj, GenerateType type, List<AnimationClip> clips, SkinnedMeshRenderer skinnedMeshRenderer, float compress)
+        public void setSelectedModel(GameObject obj, GenerateType type, List<AnimationClip> clips, SkinnedMeshRenderer skinnedMeshRenderer, float compress, bool forceUpdate = false)
         {
             if (obj == null)
             {
@@ -126,7 +126,7 @@ namespace Framework.GpuSkinning
                 return;
             }
 
-            if (curGameObject != obj || animData == null || genType != type || skinnedMeshRenderer != selectedSkinnedMeshRenderer || compress!=compression)
+            if (curGameObject != obj || animData == null || genType != type || skinnedMeshRenderer != selectedSkinnedMeshRenderer || compress!=compression || forceUpdate)
             {
                 genType = type;
                 curGameObject = obj;
@@ -167,7 +167,7 @@ namespace Framework.GpuSkinning
                 // 顶点动画
                 Mesh mesh = selectedSkinnedMeshRenderer.sharedMesh;
                 animData.texWidth = mesh.vertices.Length;
-                animData.texHeight = totalFrame * 2; // vec3需要两个像素表示(rgba32->float16)
+                animData.texHeight = totalFrame; // vec3需要两个像素表示(rgba32->float16)
             }
             else
             {
@@ -199,12 +199,12 @@ namespace Framework.GpuSkinning
         }
 
         // 顶点动画纹理
-        public void generate_verticesAnim(string parentFolder, string savePath, string dataFileName, string matFileName, string prefabFileName, string mainTexPath, GenerateType generateType)
+        public void generate_verticesAnim(string parentFolder, string savePath, string dataFileName, string matFileName, string prefabFileName, string mainTexPath, GenerateType generateType, string verticesClipName)
         {
             genType = generateType;
 
             // 生成纹理数据
-            generateTexAndMesh_verticesAnim(parentFolder, savePath, dataFileName);
+            generateTexAndMesh_verticesAnim(parentFolder, savePath, dataFileName, verticesClipName);
 
             // 生成材质
             generateMaterial(savePath, matFileName, mainTexPath);
@@ -213,13 +213,13 @@ namespace Framework.GpuSkinning
             generatePrefab(savePath, prefabFileName, dataFileName, parentFolder);
 
         }
-        public void generateTexAndMesh_verticesAnim(string parentFolder, string savePath, string dataFileName)
+        public void generateTexAndMesh_verticesAnim(string parentFolder, string savePath, string dataFileName, string verticesClipName)
         {
             // 重新生成mesh(这一步生成的mesh还是带骨骼indices和骨骼权重的，但顶点动画是不需要这些数据的，后面会删掉)
             rebuildAllMeshes(savePath, parentFolder);
 
             // 将骨骼矩阵写入纹理
-            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGB24, false);
+            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false);
             tex2D.filterMode = FilterMode.Point;
             int clipIdx = 0;
             int pixelIdx = 0;
@@ -255,8 +255,7 @@ namespace Framework.GpuSkinning
                         matrixMulFloat(ref boneMatrix3, boneWeights.w);
                         position = (matrixAddMatrix(matrixAddMatrix(boneMatrix0, boneMatrix1), matrixAddMatrix(boneMatrix2, boneMatrix3))) * vertex;
                         Color[] colors = convertThreeFloat16Bytes2TwoColor(convertFloat32toFloat16Bytes(position.x), convertFloat32toFloat16Bytes(position.y), convertFloat32toFloat16Bytes(position.z));
-                        tex2D.SetPixel(vertexIndex, totalFrameIndex * 2, colors[0]);
-                        tex2D.SetPixel(vertexIndex, totalFrameIndex * 2 + 1, colors[1]);
+                        tex2D.SetPixel(vertexIndex, totalFrameIndex, new Color(position.x, position.y, position.z));
                     }
 
                     ++totalFrameIndex;
@@ -286,7 +285,9 @@ namespace Framework.GpuSkinning
                 indices.Add(new Vector4(vertexIndex, vertexIndex, vertexIndex, vertexIndex));
             }
             instMesh.SetUVs(1, indices);
-
+            // 修改模型原始顶点
+            rebuildMeshVertices(instMesh, verticesClipName);
+            
             EditorUtility.SetDirty(instMesh);
             AssetDatabase.Refresh();
             AssetDatabase.SaveAssets();
@@ -442,7 +443,7 @@ namespace Framework.GpuSkinning
             rebuildAllMeshes(savePath, parentFolder);
 
             // 将骨骼矩阵写入纹理
-            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBA32, false);
+            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false);
             tex2D.filterMode = FilterMode.Point;
             int clipIdx = 0;
             int pixelIdx = 0;
@@ -484,18 +485,9 @@ namespace Framework.GpuSkinning
                         }
 
                         pixelUv = convertPixel2UV(pixelIdx++);
-
-                        Color color1 = convertFloat16Bytes2Color(convertFloat32toFloat16Bytes(rotation.x), convertFloat32toFloat16Bytes(rotation.y));
-                        tex2D.SetPixel(pixelUv.x, pixelUv.y, color1);
+                        tex2D.SetPixel(pixelUv.x, pixelUv.y, new Color(rotation.x, rotation.y, rotation.z, rotation.w));
                         pixelUv = convertPixel2UV(pixelIdx++);
-                        Color color2 = convertFloat16Bytes2Color(convertFloat32toFloat16Bytes(rotation.z), convertFloat32toFloat16Bytes(rotation.w));
-                        tex2D.SetPixel(pixelUv.x, pixelUv.y, color2);
-                        pixelUv = convertPixel2UV(pixelIdx++);
-                        Color color3 = convertFloat16Bytes2Color(convertFloat32toFloat16Bytes(matrix.GetColumn(3).x), convertFloat32toFloat16Bytes(matrix.GetColumn(3).y));
-                        tex2D.SetPixel(pixelUv.x, pixelUv.y, color3);
-                        pixelUv = convertPixel2UV(pixelIdx++);
-                        Color color4 = convertFloat16Bytes2Color(convertFloat32toFloat16Bytes(matrix.GetColumn(3).z), convertFloat32toFloat16Bytes(Mathf.Clamp01(matrix.lossyScale.magnitude)));
-                        tex2D.SetPixel(pixelUv.x, pixelUv.y, color4);
+                        tex2D.SetPixel(pixelUv.x, pixelUv.y, new Color(matrix.GetColumn(3).x, matrix.GetColumn(3).y, matrix.GetColumn(3).z, Mathf.Clamp01(matrix.lossyScale.magnitude)));
 
                         //Debug.Log("==============frameIndex========start========"+ frameIndex);
                         //Debug.Log("=======rotation==========="+ rotation.x+", "+ rotation.y+", " + rotation.z +", "+rotation.w);
@@ -855,6 +847,59 @@ namespace Framework.GpuSkinning
                 boneBindposes[remapIdx[bpIdx]] = aBindPoses[bpIdx];
             }
         }
+        
+        // 用某个动画的起始帧来作为Mesh的顶点数据
+    private void rebuildMeshVertices(Mesh targetMesh, string verticesClipName)
+    {
+        int clipIdx = 0;
+        GpuSkinningAnimClip boneAnimation = null;
+        AnimationClip clip = null;
+        List<Matrix4x4> boneMatrices = null;
+        Vector4 boneIndices, boneWeights;
+        Matrix4x4 boneMatrix0, boneMatrix1, boneMatrix2, boneMatrix3;
+        Vector3 src_vertex, src_normal;
+        Vector4 vertex;
+
+        for (clipIdx = 0; clipIdx < animClips.Length; ++clipIdx)
+        {
+            boneAnimation = animData.clips[clipIdx];
+            clip = animClips[clipIdx];
+            if (clip.name == verticesClipName)
+            {
+                Vector3[] vertices = new Vector3[targetMesh.vertices.Length];
+                Vector3[] normals = new Vector3[targetMesh.vertices.Length];
+
+                int frameIndex = 0;
+                boneMatrices = samplerAnimationClipBoneMatrices(curGameObject, clip, (float)frameIndex / clip.frameRate);
+                Matrix4x4 boneTransMatrix;
+                for (int vertexIndex = 0; vertexIndex < targetMesh.vertices.Length; ++vertexIndex)
+                {
+                    src_vertex = targetMesh.vertices[vertexIndex];
+                    src_normal = targetMesh.normals[vertexIndex];
+                    vertex = new Vector4(src_vertex.x, src_vertex.y, src_vertex.z, 1);
+                    boneIndices = boneIndicesList[vertexIndex];
+                    boneWeights = boneWeightsList[vertexIndex];
+                    boneMatrix0 = boneMatrices[Mathf.RoundToInt(boneIndices.x)];
+                    boneMatrix1 = boneMatrices[Mathf.RoundToInt(boneIndices.y)];
+                    boneMatrix2 = boneMatrices[Mathf.RoundToInt(boneIndices.z)];
+                    boneMatrix3 = boneMatrices[Mathf.RoundToInt(boneIndices.w)];
+                    matrixMulFloat(ref boneMatrix0, boneWeights.x);
+                    matrixMulFloat(ref boneMatrix1, boneWeights.y);
+                    matrixMulFloat(ref boneMatrix2, boneWeights.z);
+                    matrixMulFloat(ref boneMatrix3, boneWeights.w);
+                    boneTransMatrix = (matrixAddMatrix(matrixAddMatrix(boneMatrix0, boneMatrix1), matrixAddMatrix(boneMatrix2, boneMatrix3)));
+                    vertices[vertexIndex] = boneTransMatrix * vertex;
+                    normals[vertexIndex] = boneTransMatrix * src_normal;
+                }
+                targetMesh.vertices = vertices;
+                targetMesh.normals = normals;
+
+                break;
+            }
+
+        }
+
+    }
 
         public GpuSkinningAnimData getAnimData()
         {
