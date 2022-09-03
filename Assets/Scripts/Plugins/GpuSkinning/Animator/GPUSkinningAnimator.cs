@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 namespace Framework.GpuSkinning
 {
@@ -15,6 +16,10 @@ namespace Framework.GpuSkinning
 
         [HideInInspector]
         public GpuSkinningAnimData animData ;
+
+        private MaterialPropertyBlock m_materialPropertyBlock;
+        private static int k_ShaderPropertyID_AnimatorData = -1;
+        private Vector3 animatorData = Vector3.zero;
         
         private MeshRenderer meshRenderer;
         private MeshFilter meshFilter;
@@ -23,31 +28,25 @@ namespace Framework.GpuSkinning
 
         private Transform m_transform;
         private GameObject m_gameObject;
-        private Vector3 m_scale;
-        private int m_scaleXFlag;   // 0.正 1.负
-        private float m_colorIndex;
 
         private Action m_endTrigger = null;
         private float m_startTime;
         private float m_animationLength;
         private bool isPlayTriggerAni;
 
-        int index { get; set; }
         public float animatorSpeed
         {
             get { return m_gpuAnimation != null ? m_gpuAnimation.timeScale : 1.0f; }
             set { if (m_gpuAnimation != null) m_gpuAnimation.timeScale = value; }
         }
-        public Vector3 scale
-        {
-            set {
-                m_scale.x = value.x; m_scale.z = value.z;
-                m_scaleXFlag = m_scale.x > 0 ? 0 : 1000;
-            }
-        }
 
         public void Awake()
         {
+            if (k_ShaderPropertyID_AnimatorData == -1)
+            {
+                k_ShaderPropertyID_AnimatorData = Shader.PropertyToID("_AnimatorData");
+            }
+            
             m_transform = transform;
             m_gameObject = gameObject;
             meshRenderer = this.gameObject.GetComponent<MeshRenderer>();
@@ -55,14 +54,14 @@ namespace Framework.GpuSkinning
             meshFilter = this.gameObject.GetComponent<MeshFilter>();
             meshFilter.sharedMesh = lowMesh;
 
-            scale = m_transform.localScale;
-
             m_gpuAnimation = new GPUSkinningAnimation();
             if (textAsset)
             {
                 animData = textAsset;
                 m_gpuAnimation.Initial(animData);
             }
+            
+            m_materialPropertyBlock = new MaterialPropertyBlock();
         }
 
         public void OnDestroy()
@@ -73,28 +72,19 @@ namespace Framework.GpuSkinning
         {
             m_gpuAnimation.Update(Time.deltaTime);
 
-            updateAnimationInfoIntoScale();
-            m_transform.localScale = m_scale;
+            updateMaterialPropertyBlock();
 
             OnUpdate();
         }
 
-        private void updateAnimationInfoIntoScale()
+        private void updateMaterialPropertyBlock()
         {
-            // FrameIndex（3位[0~999帧]） .(小数点后)  ColorIndex（2位）
-            m_scale.y = m_gpuAnimation.getFrameIndex() + m_colorIndex;
-            // xFlag(1位) BlendFrameIndex（3位[0~999帧]).(小数点后) BlendProgress (n位)
-            m_scale.z = m_scaleXFlag + m_gpuAnimation.getBlendFrameIndex() + m_gpuAnimation.getBlendProgress();
-        }
-
-        public void SetMaskColorTexture(Texture2D mackColorTex)
-        {
-            mat.SetTexture("_ColorMaskTex", mackColorTex);
-        }
-
-        public void SetColor(int colorIndex)
-        {
-            m_colorIndex = colorIndex/100f;
+            m_materialPropertyBlock.Clear();
+            animatorData.x = m_gpuAnimation.getFrameIndex();    // frameIndex
+            animatorData.y = m_gpuAnimation.getBlendFrameIndex();    // blendFrameIndex
+            animatorData.z = m_gpuAnimation.getBlendProgress();    // blendProgress
+            m_materialPropertyBlock.SetVector(k_ShaderPropertyID_AnimatorData, animatorData);
+            meshRenderer.SetPropertyBlock(m_materialPropertyBlock);
         }
 
         void OnUpdate()

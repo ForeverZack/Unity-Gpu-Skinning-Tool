@@ -16,7 +16,8 @@ namespace Framework.GpuSkinning
             "dynamic (骨骼动画 内置instance)",
             "instance (骨骼动画 手动Instance)",
             "noise vertices animation (噪点顶点动画 内置instance)",
-            "modify model matrix (修改矩阵顶点动画 内置instance)"
+            "modify model matrix (修改矩阵顶点动画 内置instance)",
+            "mpb (修改mpb 内置instance)"
         };
 
         static string parentFolder;

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4159213710010832475}
   - component: {fileID: 8302301046552740912}
   - component: {fileID: 6143483517521568}
-  - component: {fileID: 8525694890810642539}
+  - component: {fileID: -4166553632739451025}
   m_Layer: 0
   m_Name: Fighter_ModifyModelMatVertPre
   m_TagString: Untagged
@@ -84,7 +84,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8525694890810642539
+--- !u!114 &-4166553632739451025
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,7 +93,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 502404222745116657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 864146f5f06a4134283f339fdf4c872d, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e55027b89c4e8149829c3ef4687725c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   mat: {fileID: 2100000, guid: 9548bee563c507f4a9893e2eb577ee11, type: 2}

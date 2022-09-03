@@ -9,6 +9,7 @@
 第四个场景示范了如何用一张噪点图实现不同位置的模型实例处于不同的动画帧。<br>
 第五个场景示范了通过修改模型的变换信息，再在shader中去提取动画帧，以让不同的模型实例处于不同的动画帧，并且该方法支持补帧，不同关键帧之间衔接会更加流畅。
 同时，这个场景也示范了对动画关键帧的压缩，这里以2倍的压缩率(也就是15fps)运行，动画依旧流畅。<br>
+第六个场景示范了通过MaterialPropertyBlock来传递动画帧，以让不同的模型实例处于不同的动画帧，并且该方法支持补帧，不同关键帧之间衔接会更加流畅。<br>
 
 ## 效果截图：
 ![img](https://github.com/ForeverZack/Unity-Gpu-Skinning-Tool/blob/master/manual/pic/modifyTransform.gif)

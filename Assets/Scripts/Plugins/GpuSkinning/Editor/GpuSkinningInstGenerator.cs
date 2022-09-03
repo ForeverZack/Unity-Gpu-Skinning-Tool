@@ -37,6 +37,8 @@ namespace Framework.GpuSkinning
             NoiseVerticesAnim,
             // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
             ModifyModelMatrix,
+            // MPB -- 自动instance 使用Material Property Block传值
+            MPBVerticesAnim,
         }
         // 生成类型的配置
         public class GenerateConfig
@@ -71,6 +73,7 @@ namespace Framework.GpuSkinning
             { GenerateType.GpuInstance, new GenerateConfig(AnimationType.Skeleton, "Custom/GpuSkinningAnim_Inst", "_Data.asset", "_InstPre.prefab", "_InstMat.mat", "_Mesh.asset") },      // Instance -- gpu instance
             { GenerateType.NoiseVerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/NoiseGpuVerticesAnimation", "_VertData.asset", "_NoiseVertPre.prefab", "_NoiseVertMat.mat", "_VertMesh.asset") },  // Noise Animation -- 自动instance 噪点顶点动画
             { GenerateType.ModifyModelMatrix, new GenerateConfig(AnimationType.Vertices, "Custom/ModifyModelMatGpuVerticesAnimation", "_VertData.asset", "_ModifyModelMatVertPre.prefab", "_ModifyModelMatVertMat.mat", "_VertMesh.asset") },    // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
+            { GenerateType.MPBVerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/MPBGpuVerticesAnimation", "_VertData.asset", "_MPBVertPre.prefab", "_MPBVertMat.mat", "_VertMesh.asset") },    // MPB -- 自动instance 使用Material Property Block传值
         };
 
         // 每根骨骼每帧所占像素空间(0,1:rotation, 2,3:translation)
@@ -385,7 +388,6 @@ namespace Framework.GpuSkinning
 
         public void generatePrefab(string savePath, string prefabFileName, string dataFileName, string parentFolder)
         {
-            string prefabName = prefabFileName.Substring(0, prefabFileName.Length - ".prefab".Length);
             GameObject prefab = new GameObject(prefabFileName);
 
             // 组件
@@ -393,17 +395,32 @@ namespace Framework.GpuSkinning
             meshFilter.sharedMesh = instMesh;
             MeshRenderer renderer = prefab.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = instMaterial;
-            if (this.genType == GenerateType.ModifyModelMatrix)
+            switch (this.genType)
             {
-                GPUSkinningAnimator animator = prefab.AddComponent<GPUSkinningAnimator>();
-                animator.mat = instMaterial;
-                animator.lowMesh = instMesh;
-                animator.textAsset = AssetDatabase.LoadAssetAtPath<GpuSkinningAnimData>(Path.Combine(savePath, dataFileName));
-            }
-            else
-            {
-                GpuSkinningInstance instance = prefab.AddComponent<GpuSkinningInstance>();
-                instance.textAsset = AssetDatabase.LoadAssetAtPath<GpuSkinningAnimData>(Path.Combine(savePath, dataFileName));
+                case GenerateType.ModifyModelMatrix:
+                    {
+                        ModifyModelMatrixGPUSkinningAnimator animator = prefab.AddComponent<ModifyModelMatrixGPUSkinningAnimator>();
+                        animator.mat = instMaterial;
+                        animator.lowMesh = instMesh;
+                        animator.textAsset = AssetDatabase.LoadAssetAtPath<GpuSkinningAnimData>(Path.Combine(savePath, dataFileName));
+                    }
+                    break;
+
+                case GenerateType.MPBVerticesAnim:
+                    {
+                        GPUSkinningAnimator animator = prefab.AddComponent<GPUSkinningAnimator>();
+                        animator.mat = instMaterial;
+                        animator.lowMesh = instMesh;
+                        animator.textAsset = AssetDatabase.LoadAssetAtPath<GpuSkinningAnimData>(Path.Combine(savePath, dataFileName));
+                    }
+                    break;
+
+                default:
+                    {
+                        GpuSkinningInstance instance = prefab.AddComponent<GpuSkinningInstance>();
+                        instance.textAsset = AssetDatabase.LoadAssetAtPath<GpuSkinningAnimData>(Path.Combine(savePath, dataFileName));
+                    }
+                    break;
             }
 
             string prefabPath = Path.Combine(savePath, prefabFileName);

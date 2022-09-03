@@ -9,3 +9,4 @@ UnityPackageManager
 *.sln
 .DS_Store
 .vs
+.idea
