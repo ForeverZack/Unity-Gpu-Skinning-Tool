@@ -14,6 +14,24 @@
 ## 效果截图：
 ![img](https://github.com/ForeverZack/Unity-Gpu-Skinning-Tool/blob/master/manual/pic/modifyTransform.gif)
 
+## 如何导出相关纹理数据等 <br>
+菜单栏"Window" -> "GpuSkinningTool" -> 选择录入资源 -> 检查生成纹理的相关信息 -> 生成	<br>
+
+## 注意事项 <br>
+1.支持同一个fbx下有多个skinnedMeshRenderer，也支持一个skinnedMeshRenderer有多个subMesh，但这些网格模型都必须使用同一张主纹理贴图
+(多个也是能实现的，要自己特殊处理，看需求)	<br>
+2.无法保持fbx的节点层级，只会生成一个prefab，上述的网格信息都将被存到同一个mesh中	<br>
+3.Mesh的uv1和uv2分别被用来保存了骨骼id和骨骼权重用来蒙皮，注意勿重复使用 <br>
+4.对于一个mesh来说boneWeight.boneIndex对应的是当前节点SkinnedMeshRenderer的bones。它们都只是整个模型文件的部分骨骼，但它们boneIndex的顺序
+和bones的顺序是相同的。所以可以先遍历记录整个模型的骨骼id列表，再根据当前节点SkinnedMeshRenderer的bones来重新生成Mesh.boneWeights的骨骼id。 <br>
+5.骨骼矩阵 = boneNode.localToWorldMatrix * boneBindPose(记录在Mesh中)。这里实际上是两步步骤：<br>
+	1)网格模型的顶点是模型空间下的，被绑定到骨骼上(父节点发生改变)所以需要将它转到骨骼节点的坐标系。模型空间->骨骼空间	<br>
+	2)bone.localToWorldMatrix是骨骼节点到模型空间的变换(在播放动画时，它记录了骨骼在模型空间下的变换).	骨骼空间->模型空间 <br>
+	
+## 2022/09/03 更新
+添加了MaterialPropertyBlock来传递动画帧数据的方式，这样做不会破坏model矩阵，模型可以正常做变换。另外暂时升级纹理格式到RGBAHalf，后面会
+根据设备支持来判断是使用两张RGBA32来合成，还是直接使用RGBAHalf。后续还将添加对URP的支持。 <br>
+
 ## 2021/06/03 更新
 增加对动画帧率的压缩，目前只有第5个场景里的prefab支持，因为其中有完整的通过帧率压缩来计算当前关键帧，以及到下一个关键帧之间的混合百分比。
 其他几个场景都是直接设置shader的FrameIndex的，没有根据动画的帧率做换算。另外，渲染骨骼动画的话，还没有处理。 <br>
@@ -53,17 +71,3 @@ gles3.0不支持位运算，所以把取位操作换成取余代替。<br>
 ## 2020/1/12 更新
 优化Float16在shader中的算法，现在采用1个符号位，7个整数位(高位)，8个小数位(低位)，这样做
 可以省去shader中的位运算(或者取余运算)。 <br>
-
-## 如何导出相关纹理数据等 <br>
-菜单栏"Window" -> "GpuSkinningTool" -> 选择录入资源 -> 检查生成纹理的相关信息 -> 生成	<br>
-
-## 注意事项 <br>
-1.支持同一个fbx下有多个skinnedMeshRenderer，也支持一个skinnedMeshRenderer有多个subMesh，但这些网格模型都必须使用同一张主纹理贴图
-(多个也是能实现的，要自己特殊处理，看需求)	<br>
-2.无法保持fbx的节点层级，只会生成一个prefab，上述的网格信息都将被存到同一个mesh中	<br>
-3.Mesh的uv1和uv2分别被用来保存了骨骼id和骨骼权重用来蒙皮，注意勿重复使用 <br>
-4.对于一个mesh来说boneWeight.boneIndex对应的是当前节点SkinnedMeshRenderer的bones。它们都只是整个模型文件的部分骨骼，但它们boneIndex的顺序
-和bones的顺序是相同的。所以可以先遍历记录整个模型的骨骼id列表，再根据当前节点SkinnedMeshRenderer的bones来重新生成Mesh.boneWeights的骨骼id。 <br>
-5.骨骼矩阵 = boneNode.localToWorldMatrix * boneBindPose(记录在Mesh中)。这里实际上是两步步骤：<br>
-	1)网格模型的顶点是模型空间下的，被绑定到骨骼上(父节点发生改变)所以需要将它转到骨骼节点的坐标系。模型空间->骨骼空间	<br>
-	2)bone.localToWorldMatrix是骨骼节点到模型空间的变换(在播放动画时，它记录了骨骼在模型空间下的变换).	骨骼空间->模型空间 <br>
