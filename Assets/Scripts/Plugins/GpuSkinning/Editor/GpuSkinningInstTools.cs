@@ -27,6 +27,8 @@ namespace Framework.GpuSkinning
         private GpuSkinningInstGenerator.GenerateType lastGenerateType = GpuSkinningInstGenerator.GenerateType.VerticesAnim;
         GameObject selectedFbx = null;
         GameObject curGameObject = null;
+        // 附加动画文件
+        private List<AnimationClip> extAnimationClips = new List<AnimationClip>();
         // 原始路径
         string srcPath = "";
         // 文件输出路径
@@ -70,6 +72,7 @@ namespace Framework.GpuSkinning
         private void OnGUI()
         {
             selectedFbx = (GameObject)EditorGUILayout.ObjectField("请选择Fbx文件:", selectedFbx, typeof(GameObject), false);
+
             if (selectedFbx)
             {
                 //Debug.Log(selectedFbx);
@@ -83,14 +86,7 @@ namespace Framework.GpuSkinning
                     srcPath = srcPath.Substring(0, srcPath.LastIndexOf("/") + 1);
                     savePath = srcPath + "Output/";
                     // mesh list
-                    skinnedMeshRenderersDict.Clear();
-                    SkinnedMeshRenderer[] skinnedMeshRenderers = selectedFbx.GetComponentsInChildren<SkinnedMeshRenderer>();
-                    skinnedMeshRendererNames = new string[skinnedMeshRenderers.Length];
-                    for (int i = 0; i < skinnedMeshRenderers.Length; ++i)
-                    {
-                        skinnedMeshRendererNames[i] = skinnedMeshRenderers[i].name;
-                        skinnedMeshRenderersDict.Add(skinnedMeshRendererNames[i], skinnedMeshRenderers[i]);
-                    }
+                    RefreshSkinnedMeshrenderersDict();
 
                     // if (!savePath.EndsWith(".FBX"))
                     // {
@@ -104,6 +100,7 @@ namespace Framework.GpuSkinning
   
                     mainTexPath = srcPath + selectedFbx.name + DEFAULT_MAIN_TEX_NAME_POSTFIX;
                     
+                    extAnimationClips.Clear();
                     // animation list
                     List<string> animationNameList = new List<string>();
                     string assetPath = AssetDatabase.GetAssetPath(selectedFbx);
@@ -133,6 +130,17 @@ namespace Framework.GpuSkinning
 
                     refreshPanel(selectedFbx);
                 }
+                
+                EditorGUILayout.LabelField("附加动画列表:");
+                EditorUtils.CreateListField(extAnimationClips, (idx, clip) =>
+                {
+                    var animationClip = (AnimationClip) EditorGUILayout.ObjectField(clip, typeof(AnimationClip), false);
+                    extAnimationClips[idx] = animationClip;
+                    if (clip != animationClip)
+                    {
+                        refreshPanel(selectedFbx, true);
+                    }
+                });
             }
 
             generateType = (GpuSkinningInstGenerator.GenerateType)EditorGUILayout.Popup("请选择输出类型: ", (int)lastGenerateType, DEFAULT_GENERATE_TYPE_POPUP);
@@ -230,9 +238,49 @@ namespace Framework.GpuSkinning
             }
         }
 
+        private static void AddExtAnimClips(List<AnimationClip> extClips)
+        {
+            for (int i = 0; i < extClips.Count; ++i)
+            {
+                AnimationClip clip = extClips[i];
+                if (clip != null)
+                {
+                    bool alreadyHas = false;
+                    foreach (var tClip in m_clipList)
+                    {
+                        if (clip.name == tClip.name)
+                        {
+                            Debug.LogError($"发现重名的附加动画文件{clip.name}");
+                            alreadyHas = true;
+                            break;
+                        }
+                    }
+
+                    if (!alreadyHas)
+                    {
+                        m_clipList.Add(clip);
+                    }
+                }
+            }
+        }
+
+        void RefreshSkinnedMeshrenderersDict()
+        {
+            skinnedMeshRenderersDict.Clear();
+            SkinnedMeshRenderer[] skinnedMeshRenderers = selectedFbx.GetComponentsInChildren<SkinnedMeshRenderer>();
+            skinnedMeshRendererNames = new string[skinnedMeshRenderers.Length];
+            for (int i = 0; i < skinnedMeshRenderers.Length; ++i)
+            {
+                skinnedMeshRendererNames[i] = skinnedMeshRenderers[i].name;
+                skinnedMeshRenderersDict.Add(skinnedMeshRendererNames[i], skinnedMeshRenderers[i]);
+            }
+        }
+
         private void refreshPanel(GameObject selectedFbx, bool forceUpdate = false)
         {
+            RefreshSkinnedMeshrenderersDict();
             GetAnimClips(selectedFbx);
+            AddExtAnimClips(extAnimationClips);
             generator.setSelectedModel(selectedFbx, generateType, m_clipList, skinnedMeshRenderersDict[skinnedMeshRendererNames[selectedSkinnedMeshRenderer]], compression, forceUpdate);
         }
 
@@ -257,6 +305,8 @@ namespace Framework.GpuSkinning
                     str += "提示: 未选中FBX文件!!\n";
                 }
             }
+
+            str += "\n注意: 附加动画列表中的动画必须与主模型使用相同网格和骨骼!!\n";
 
             return str;
         }

@@ -68,12 +68,12 @@ namespace Framework.GpuSkinning
         }
         // 配置
         public Dictionary<GenerateType, GenerateConfig> generateConfigs = new Dictionary<GenerateType, GenerateConfig> {
-            { GenerateType.VerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/GpuVerticesAnimation", "_VertData.asset", "_VertPre.prefab", "_VertMat.mat", "_VertMesh.asset") },    // Vertics Animation -- 自动instance 顶点动画
-            { GenerateType.Dynamic, new GenerateConfig(AnimationType.Skeleton, "Custom/GpuSkinningAnimation", "_Data.asset", "_DynPre.prefab", "_DynMat.mat", "_Mesh.asset") },    // Dynamic -- 自动instance 骨骼动画
-            { GenerateType.GpuInstance, new GenerateConfig(AnimationType.Skeleton, "Custom/GpuSkinningAnim_Inst", "_Data.asset", "_InstPre.prefab", "_InstMat.mat", "_Mesh.asset") },      // Instance -- gpu instance
-            { GenerateType.NoiseVerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/NoiseGpuVerticesAnimation", "_VertData.asset", "_NoiseVertPre.prefab", "_NoiseVertMat.mat", "_VertMesh.asset") },  // Noise Animation -- 自动instance 噪点顶点动画
-            { GenerateType.ModifyModelMatrix, new GenerateConfig(AnimationType.Vertices, "Custom/ModifyModelMatGpuVerticesAnimation", "_VertData.asset", "_ModifyModelMatVertPre.prefab", "_ModifyModelMatVertMat.mat", "_VertMesh.asset") },    // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
-            { GenerateType.MPBVerticesAnim, new GenerateConfig(AnimationType.Vertices, "Custom/MPBGpuVerticesAnimation", "_VertData.asset", "_MPBVertPre.prefab", "_MPBVertMat.mat", "_VertMesh.asset") },    // MPB -- 自动instance 使用Material Property Block传值
+            { GenerateType.VerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/GpuVerticesAnimation", "_VertData.asset", "_VertPre.prefab", "_VertMat.mat", "_VertMesh.asset") },    // Vertics Animation -- 自动instance 顶点动画
+            { GenerateType.Dynamic, new GenerateConfig(AnimationType.Skeleton, "GPUSkin/GpuSkinningAnimation", "_Data.asset", "_DynPre.prefab", "_DynMat.mat", "_Mesh.asset") },    // Dynamic -- 自动instance 骨骼动画
+            { GenerateType.GpuInstance, new GenerateConfig(AnimationType.Skeleton, "GPUSkin/GpuSkinningAnim_Inst", "_Data.asset", "_InstPre.prefab", "_InstMat.mat", "_Mesh.asset") },      // Instance -- gpu instance
+            { GenerateType.NoiseVerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/NoiseGpuVerticesAnimation", "_VertData.asset", "_NoiseVertPre.prefab", "_NoiseVertMat.mat", "_VertMesh.asset") },  // Noise Animation -- 自动instance 噪点顶点动画
+            { GenerateType.ModifyModelMatrix, new GenerateConfig(AnimationType.Vertices, "GPUSkin/ModifyModelMatGpuVerticesAnimation", "_VertData.asset", "_ModifyModelMatVertPre.prefab", "_ModifyModelMatVertMat.mat", "_VertMesh.asset") },    // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
+            { GenerateType.MPBVerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/MPBGpuVerticesAnimation", "_VertData.asset", "_MPBVertPre.prefab", "_MPBVertMat.mat", "_VertMesh.asset") },    // MPB -- 自动instance 使用Material Property Block传值
         };
 
         // 每根骨骼每帧所占像素空间(0,1:rotation, 2,3:translation)
@@ -444,6 +444,7 @@ namespace Framework.GpuSkinning
             {
                 Texture2D mainTex = AssetDatabase.LoadAssetAtPath<Texture2D>(mainTexPath);
                 instMaterial.SetTexture("_MainTex", mainTex);
+                instMaterial.SetTexture("_BaseMap", mainTex);
             }
             instMaterial.SetTexture("_AnimationTex", saved_animTex);
 
