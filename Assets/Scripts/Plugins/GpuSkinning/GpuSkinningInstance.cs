@@ -51,7 +51,6 @@ public class GpuSkinningInstance : MonoBehaviour {
 
         _material.SetInt("_BoneNum", anim_data.totalBoneNum);
         //_material.SetTexture("_AnimationTex", anim_tex);
-        _material.SetVector("_AnimationTexSize", new Vector4(anim_data.texWidth, anim_data.texHeight, 0, 0));
 	}
 
     // Update is called once per frame

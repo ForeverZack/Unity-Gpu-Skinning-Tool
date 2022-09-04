@@ -1,11 +1,12 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "Custom/GpuSkinningAnimation" {
-	Properties {
-		_MainTex ("Albedo (RGB)", 2D) = "white" {}
+﻿// SRP Batch: support
+// GPU Instancing: not support
+Shader "GPUSkin/GpuSkinningAnimation" 
+{
+	Properties 
+	{
+		_BaseMap ("Albedo (RGB)", 2D) = "white" {}
 		_Color ("Color", Color) = (1,1,1,1)
         _AnimationTex("Animation Texture", 2D) = "white" {}
-		_AnimationTexSize("Animation Texture Size", Vector) = (0, 0, 0, 0)
 
 		_BoneNum("Bone Num", Int) = 0
         _FrameIndex("Frame Index", Range(0.0, 196)) = 0.0
@@ -13,39 +14,48 @@ Shader "Custom/GpuSkinningAnimation" {
 		_BlendProgress("Blend Progress", Range(0.0, 1.0)) = 0.0
 	}
 
-	SubShader {
-		Tags { "RenderType"="Opaque" }
-		LOD 100
-
-		Pass
-		{
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
-			fixed4 _Color;
+	SubShader 
+	{
+	    HLSLINCLUDE
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            
+            struct Attributes
+		    {
+			    float4 positionOS : POSITION;
+                half3 normal : NORMAL;
+				float2 texcoord : TEXCOORD0;
+				float4 boneIndices : TEXCOORD1;
+				float4 boneWeights : TEXCOORD2;
+				//float4 color : COLOR;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+		    };
+		    struct Varyings
+		    {
+			    float4 positionCS : SV_POSITION;
+                float2 uv : TEXCOORD0;
+                UNITY_VERTEX_OUTPUT_STEREO
+		    };
+		    
+            CBUFFER_START(UnityPerMaterial)
+                half4 _Color;
+                // 动画纹理尺寸信息
+                float4 _AnimationTex_TexelSize;
+                // 骨骼数量
+                int _BoneNum;
+                // 当前动画第几帧
+                int _FrameIndex;
+                // 下一个动画在第几帧
+                int _BlendFrameIndex;
+                // 下一个动画的融合程度
+                float _BlendProgress;
+            CBUFFER_END
+            
+            TEXTURE2D(_BaseMap);
+            SAMPLER(sampler_BaseMap);
 
 			//  动画纹理
 			sampler2D _AnimationTex;
-			float4 _AnimationTex_ST;
-			float4 _AnimationTexSize;
-
-			int _BoneNum;
-			// 当前动画第几帧
-			int _FrameIndex;
-			// 下一个动画在第几帧
-			int _BlendFrameIndex;
-			// 下一个动画的融合程度
-			float _BlendProgress;
-
-		// #pragma target 3.0
-		// #pragma multi_compile_instancing
-			// UNITY_INSTANCING_BUFFER_START(Props)
-			// 	// put more per-instance properties here
-			// UNITY_INSTANCING_BUFFER_END(Props)
-
+		
 			float4x4 QuaternionToMatrix(float4 vec)
 			{
 				float4x4 ret;
@@ -92,6 +102,14 @@ Shader "Custom/GpuSkinningAnimation" {
 				return M;
 			}
 
+			float4 indexToUV(float index)
+			{
+				int iIndex = trunc(index + 0.5);
+				int row = (int)(iIndex * _AnimationTex_TexelSize.x);
+				float col = iIndex - row*_AnimationTex_TexelSize.z;
+				return float4((col+0.5)*_AnimationTex_TexelSize.x, (row+0.5) *_AnimationTex_TexelSize.y, 0, 0);
+			}
+
 			float convertFloat16BytesToHalf(int data1, int data2)
 			{
 				float f_data2 = data2;
@@ -112,86 +130,50 @@ Shader "Custom/GpuSkinningAnimation" {
 							, convertFloat16BytesToHalf(floor(color2.b * 255 + 0.5), floor(color2.a * 255 + 0.5)));
 			}
 
-			float4 indexToUV(float index)
+			Varyings Vertex(Attributes input)
 			{
-				int iIndex = trunc(index+0.5);
-				int row = (int)(iIndex / _AnimationTexSize.x);
-				float col = iIndex - row*_AnimationTexSize.x;
-				return float4((col+0.5)/_AnimationTexSize.x, (row+0.5)/_AnimationTexSize.y, 0, 0);
-			}
+				UNITY_SETUP_INSTANCE_ID(input);
+				Varyings output;
 
-			#include "UnityCG.cginc"
-			#pragma multi_compile_instancing
-			struct appdata
-			{
-				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
-				float4 boneIndices : TEXCOORD1;
-				float4 boneWeights : TEXCOORD2;
-				//float4 color : COLOR;
-				half3 normal : NORMAL;
-				 UNITY_VERTEX_INPUT_INSTANCE_ID
-			};
-
-			struct v2f
-			{
-				float2 uv : TEXCOORD0;
-				float4 vertex : SV_POSITION;
-			};
-
-			v2f vert(appdata v)
-			{
-				UNITY_SETUP_INSTANCE_ID(v);
-
-				v2f o;
-				// UNITY_SETUP_INSTANCE_ID(v);
-
-				float4 boneIndices = v.boneIndices;
-				float4 boneWeights = v.boneWeights;
-				//o.color = v.uv2;
-				// half frameIndex = UNITY_ACCESS_INSTANCED_PROP(_FrameIndex_arr, _FrameIndex);
-				float4 boneUV1;
+				float4 boneIndices = input.boneIndices;
+				float4 boneWeights = input.boneWeights;
+				
+				int frameIndex = _FrameIndex;
+				int blendFrameIndex = _BlendFrameIndex;
+                float blendProgress = _BlendProgress;
+                float4 boneUV1;
 				float4 boneUV2;
-				float4 boneUV3;
-				float4 boneUV4;
 				int frameDataPixelIndex;
-				static const int DEFAULT_PER_FRAME_BONE_DATASPACE = 2;
+				const int DEFAULT_PER_FRAME_BONE_DATASPACE = 2;
 
 				// 正在播放的动画
-				frameDataPixelIndex = (_BoneNum * _FrameIndex) * DEFAULT_PER_FRAME_BONE_DATASPACE;
+				frameDataPixelIndex = _BoneNum * frameIndex * DEFAULT_PER_FRAME_BONE_DATASPACE;
 				// bone0
-				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[0]*DEFAULT_PER_FRAME_BONE_DATASPACE);
-				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[0]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
+				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[0] * DEFAULT_PER_FRAME_BONE_DATASPACE);
+				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[0] * DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
 				float4x4 bone0_matrix = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
 				// bone1
-				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[1]*DEFAULT_PER_FRAME_BONE_DATASPACE);
-				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[1]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
+				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[1] * DEFAULT_PER_FRAME_BONE_DATASPACE);
+				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[1] * DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
 				float4x4 bone1_matrix = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
 				// bone2
-				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[2]*DEFAULT_PER_FRAME_BONE_DATASPACE);
-				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[2]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
+				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[2] * DEFAULT_PER_FRAME_BONE_DATASPACE);
+				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[2] * DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
 				float4x4 bone2_matrix = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
 				// bone3
-				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[3]*DEFAULT_PER_FRAME_BONE_DATASPACE);
-				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[3]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
+				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[3] * DEFAULT_PER_FRAME_BONE_DATASPACE);
+				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[3] * DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
 				float4x4 bone3_matrix = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
-
-
 				
-				// float progress = UNITY_ACCESS_INSTANCED_PROP(_FrameIndex_arr, _FusionProgress);
-				// float frameIndexFusion = UNITY_ACCESS_INSTANCED_PROP(_FrameIndex_arr, _FrameIndexFusion);
 				// 动画Blend
-				frameDataPixelIndex = _BoneNum * _BlendFrameIndex * DEFAULT_PER_FRAME_BONE_DATASPACE;
-
-				// bone0
+				frameDataPixelIndex = _BoneNum * blendFrameIndex * DEFAULT_PER_FRAME_BONE_DATASPACE;
+                // bone0
 				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[0]*DEFAULT_PER_FRAME_BONE_DATASPACE);
 				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[0]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
 				float4x4 bone0_matrix_blend = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
 				// bone1
 				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[1]*DEFAULT_PER_FRAME_BONE_DATASPACE);
 				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[1]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
-				boneUV3 = indexToUV(frameDataPixelIndex + boneIndices[1]*DEFAULT_PER_FRAME_BONE_DATASPACE + 2);
-				boneUV4 = indexToUV(frameDataPixelIndex + boneIndices[1]*DEFAULT_PER_FRAME_BONE_DATASPACE + 3);
 				float4x4 bone1_matrix_blend = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
 				// bone2
 				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[2]*DEFAULT_PER_FRAME_BONE_DATASPACE);
@@ -201,35 +183,42 @@ Shader "Custom/GpuSkinningAnimation" {
 				boneUV1 = indexToUV(frameDataPixelIndex + boneIndices[3]*DEFAULT_PER_FRAME_BONE_DATASPACE);
 				boneUV2 = indexToUV(frameDataPixelIndex + boneIndices[3]*DEFAULT_PER_FRAME_BONE_DATASPACE + 1);
 				float4x4 bone3_matrix_blend = DualQuaternionToMatrix(tex2Dlod(_AnimationTex, boneUV1), tex2Dlod(_AnimationTex, boneUV2));
-				bone0_matrix = lerp(bone0_matrix, bone0_matrix_blend, _BlendProgress);
-				bone1_matrix = lerp(bone1_matrix, bone1_matrix_blend, _BlendProgress);
-				bone2_matrix = lerp(bone2_matrix, bone2_matrix_blend, _BlendProgress);
-				bone3_matrix = lerp(bone3_matrix, bone3_matrix_blend, _BlendProgress);
-				
+				bone0_matrix = lerp(bone0_matrix, bone0_matrix_blend, blendProgress);
+				bone1_matrix = lerp(bone1_matrix, bone1_matrix_blend, blendProgress);
+				bone2_matrix = lerp(bone2_matrix, bone2_matrix_blend, blendProgress);
+				bone3_matrix = lerp(bone3_matrix, bone3_matrix_blend, blendProgress);
 
 				float4 pos =
-					mul(bone0_matrix, v.vertex) * boneWeights[0] +
-					mul(bone1_matrix, v.vertex) * boneWeights[1] +
-					mul(bone2_matrix, v.vertex) * boneWeights[2] +
-					mul(bone3_matrix, v.vertex) * boneWeights[3];
-				// o.vertex = UnityWorldToClipPos(pos);
-				// o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.vertex = UnityObjectToClipPos(pos);
-				o.uv = v.uv;
+					mul(bone0_matrix, input.positionOS) * boneWeights[0] +
+					mul(bone1_matrix, input.positionOS) * boneWeights[1] +
+					mul(bone2_matrix, input.positionOS) * boneWeights[2] +
+					mul(bone3_matrix, input.positionOS) * boneWeights[3];
+				output.positionCS = TransformObjectToHClip(pos.xyz);
+				output.uv = input.texcoord;
 
-				return o;
+				return output;
 			}
 
-			fixed4 frag(v2f i) : SV_Target
+			half4 Fragment(Varyings input) : SV_Target
 			{
-				fixed4 col = tex2D(_MainTex, i.uv);
+				half4 col = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);;
 				return col;
-			} 
+			}
+            
 
-			
-			ENDCG
+	    ENDHLSL
+	
+		Tags { "RenderType"="Opaque" }
+		LOD 100
+
+		Pass
+		{
+		    Tags { "RenderPipeline" = "UniversalPipeline" "LightMode"="UniversalForward" }
+			HLSLPROGRAM
+                #pragma vertex Vertex
+                #pragma fragment Fragment
+			ENDHLSL
 		}
 
 	}
-	FallBack "Diffuse"
 }

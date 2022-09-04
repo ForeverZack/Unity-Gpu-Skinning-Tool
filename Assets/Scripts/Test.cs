@@ -42,7 +42,6 @@ public class Test : MonoBehaviour {
 
         inst_material.SetInt("_BoneNum", anim_data.totalBoneNum);
 		//inst_material.SetTexture("_AnimationTex", anim_tex);
-		inst_material.SetVector("_AnimationTexSize", new Vector4(anim_data.texWidth, anim_data.texHeight, 1/anim_data.texWidth, 1/anim_data.texHeight));
 
 		uniforms = new MaterialPropertyBlock();
 		matrices = new Matrix4x4[count];
