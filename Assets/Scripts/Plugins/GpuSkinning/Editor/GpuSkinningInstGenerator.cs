@@ -241,6 +241,9 @@ namespace Framework.GpuSkinning
                 clip = animClips[clipIdx];
                 for (int frameIndex = 0; frameIndex < boneAnimation.Length(); frameIndex++)
                 {
+                    // 显示进度
+                    EditorUtility.DisplayProgressBar("导出进度", $"正在导出动画{clip.name} ({clipIdx+1}/{animClips.Length})...", frameIndex/(float)boneAnimation.Length());
+    
                     boneMatrices = samplerAnimationClipBoneMatrices(curGameObject, clip, (float)frameIndex / (clip.frameRate/compression));
                     for (int vertexIndex = 0; vertexIndex < instMesh.vertices.Length; ++vertexIndex)
                     {
@@ -265,13 +268,18 @@ namespace Framework.GpuSkinning
                 }
             }
             tex2D.Apply();
+            // 隐藏进度
+            EditorUtility.ClearProgressBar();
+            
             // 导出动画纹理
 //            animTexturePath = savePath + dataFileName.Replace(".asset", "") + ".png";
 //            exportTexture(tex2D, animTexturePath);
 //            setAnimationTextureProperties(animTexturePath);
             animTexturePath = Path.Combine(Path.GetDirectoryName(savePath), dataFileName.Replace(".asset", "")) + ".animMap.asset";
             exportTextureAsset(tex2D, animTexturePath);
+            
 
+                
             // 存储数据
             string filePath = savePath + dataFileName;
             AssetDatabase.CreateAsset(animData, filePath);
@@ -797,6 +805,9 @@ namespace Framework.GpuSkinning
             BoneWeight[] aBoneWeights = targetMesh.boneWeights;//boneIndex对应SkinnedMeshRenderer的Bones的顺序(这里只是部分骨骼)
             for (int i = 0; i < targetMesh.vertexCount; ++i)
             {
+                // 显示进度
+                EditorUtility.DisplayProgressBar("导出进度", $"正在将骨骼信息写入网格...)", i/(float)targetMesh.vertexCount);
+
                 Vector4 boneIndex = Vector4.zero;
                 Vector4 boneWeight = Vector4.zero;
                 BoneWeight bw = aBoneWeights[i];
@@ -858,6 +869,9 @@ namespace Framework.GpuSkinning
             }
             targetMesh.SetUVs(1, boneIndicesList);
             targetMesh.SetUVs(2, boneWeightsList);
+            
+            // 隐藏进度
+            EditorUtility.ClearProgressBar();
 
             // 记录原始网格的bindposes
             for (int bpIdx = 0; bpIdx < aBindPoses.Length; bpIdx++)
@@ -870,7 +884,6 @@ namespace Framework.GpuSkinning
     private void rebuildMeshVertices(Mesh targetMesh, string verticesClipName)
     {
         int clipIdx = 0;
-        GpuSkinningAnimClip boneAnimation = null;
         AnimationClip clip = null;
         List<Matrix4x4> boneMatrices = null;
         Vector4 boneIndices, boneWeights;
@@ -880,7 +893,6 @@ namespace Framework.GpuSkinning
 
         for (clipIdx = 0; clipIdx < animClips.Length; ++clipIdx)
         {
-            boneAnimation = animData.clips[clipIdx];
             clip = animClips[clipIdx];
             if (clip.name == verticesClipName)
             {
@@ -892,6 +904,9 @@ namespace Framework.GpuSkinning
                 Matrix4x4 boneTransMatrix;
                 for (int vertexIndex = 0; vertexIndex < targetMesh.vertices.Length; ++vertexIndex)
                 {
+                    // 显示进度
+                    EditorUtility.DisplayProgressBar("导出进度", $"正在重构网格顶点...)", vertexIndex/(float)targetMesh.vertices.Length);
+                    
                     src_vertex = targetMesh.vertices[vertexIndex];
                     src_normal = targetMesh.normals[vertexIndex];
                     vertex = new Vector4(src_vertex.x, src_vertex.y, src_vertex.z, 1);
@@ -911,6 +926,9 @@ namespace Framework.GpuSkinning
                 }
                 targetMesh.vertices = vertices;
                 targetMesh.normals = normals;
+                
+                // 隐藏进度
+                EditorUtility.ClearProgressBar();
 
                 break;
             }
