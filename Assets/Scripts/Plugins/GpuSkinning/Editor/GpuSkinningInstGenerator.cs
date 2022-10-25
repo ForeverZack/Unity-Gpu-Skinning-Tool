@@ -222,7 +222,7 @@ namespace Framework.GpuSkinning
             rebuildAllMeshes(savePath, parentFolder);
 
             // 将骨骼矩阵写入纹理
-            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false);
+            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false, true);
             tex2D.filterMode = FilterMode.Point;
             int clipIdx = 0;
             int pixelIdx = 0;
@@ -469,7 +469,7 @@ namespace Framework.GpuSkinning
             rebuildAllMeshes(savePath, parentFolder);
 
             // 将骨骼矩阵写入纹理
-            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false);
+            var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false, true);
             tex2D.filterMode = FilterMode.Point;
             int clipIdx = 0;
             int pixelIdx = 0;
