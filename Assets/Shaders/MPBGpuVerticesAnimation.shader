@@ -16,7 +16,7 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
             struct Attributes
 		    {
 			    float4 positionOS : POSITION;
-                half3 normal : NORMAL;
+                half3 normalOS : NORMAL;
                 float2 texcoord : TEXCOORD0;
                 float2 vertIndex : TEXCOORD1;
 				//float4 color : COLOR;
@@ -46,72 +46,6 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
 
 			//  动画纹理
 			sampler2D _AnimationTex;
-		
-			float4x4 QuaternionToMatrix(float4 vec)
-			{
-				float4x4 ret;
-				ret._11 = 2.0 * (vec.x * vec.x + vec.w * vec.w) - 1;
-				ret._21 = 2.0 * (vec.x * vec.y + vec.z * vec.w);
-				ret._31 = 2.0 * (vec.x * vec.z - vec.y * vec.w);
-				ret._41 = 0.0;
-				ret._12 = 2.0 * (vec.x * vec.y - vec.z * vec.w);
-				ret._22 = 2.0 * (vec.y * vec.y + vec.w * vec.w) - 1;
-				ret._32 = 2.0 * (vec.y * vec.z + vec.x * vec.w);
-				ret._42 = 0.0;
-				ret._13 = 2.0 * (vec.x * vec.z + vec.y * vec.w);
-				ret._23 = 2.0 * (vec.y * vec.z - vec.x * vec.w);
-				ret._33 = 2.0 * (vec.z * vec.z + vec.w * vec.w) - 1;
-				ret._43 = 0.0;
-				ret._14 = 0.0;
-				ret._24 = 0.0;
-				ret._34 = 0.0;
-				ret._44 = 1.0;
-				return ret;
-			}
-
-			float4x4 DualQuaternionToMatrix(float4 m_dual, float4 m_real)
-			{
-				float4x4 rotationMatrix = QuaternionToMatrix(float4(m_dual.x, m_dual.y, m_dual.z, m_dual.w));
-				float4x4 translationMatrix;
-				translationMatrix._11_12_13_14 = float4(1, 0, 0, 0);
-				translationMatrix._21_22_23_24 = float4(0, 1, 0, 0);
-				translationMatrix._31_32_33_34 = float4(0, 0, 1, 0);
-				translationMatrix._41_42_43_44 = float4(0, 0, 0, 1);
-				translationMatrix._14 = m_real.x;
-				translationMatrix._24 = m_real.y;
-				translationMatrix._34 = m_real.z;
-				float4x4 scaleMatrix;
-				scaleMatrix._11_12_13_14 = float4(1, 0, 0, 0);
-				scaleMatrix._21_22_23_24 = float4(0, 1, 0, 0);
-				scaleMatrix._31_32_33_34 = float4(0, 0, 1, 0);
-				scaleMatrix._41_42_43_44 = float4(0, 0, 0, 1);
-				scaleMatrix._11 = m_real.w;
-				scaleMatrix._22 = m_real.w;
-				scaleMatrix._33 = m_real.w;
-				scaleMatrix._44 = 1;
-				float4x4 M = mul(translationMatrix, mul(rotationMatrix, scaleMatrix));
-				return M;
-			}
-
-			float convertFloat16BytesToHalf(int data1, int data2)
-			{
-				float f_data2 = data2;
-				int flag = (data1/128);
-				float result = data1-flag*128	// 整数部分
-								+ f_data2/256;	// 小数部分
-				
-				result = result - 2*flag*result;		//1: 负  0:正
-
-				return result;
-			}
-
-			float4 convertColors2Halfs(float4 color1, float4 color2)
-			{
-				return float4(convertFloat16BytesToHalf(floor(color1.r * 255 + 0.5), floor(color1.g * 255 + 0.5))
-							, convertFloat16BytesToHalf(floor(color1.b * 255 + 0.5), floor(color1.a * 255 + 0.5))
-							, convertFloat16BytesToHalf(floor(color2.r * 255 + 0.5), floor(color2.g * 255 + 0.5))
-							, convertFloat16BytesToHalf(floor(color2.b * 255 + 0.5), floor(color2.a * 255 + 0.5)));
-			}
 
 			Varyings Vertex(Attributes input)
 			{
@@ -143,6 +77,65 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
 				half4 col = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv);;
 				return col;
 			}
+
+
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+            
+			float3 _LightDirection;
+			float3 _LightPosition;
+
+			float4 GetShadowPositionHClip(float3 positionOS, float3 normalOS)
+			{
+			    float3 positionWS = TransformObjectToWorld(positionOS.xyz);
+			    float3 normalWS = TransformObjectToWorldNormal(normalOS);
+
+			    #if _CASTING_PUNCTUAL_LIGHT_SHADOW
+			        float3 lightDirectionWS = normalize(_LightPosition - positionWS);
+			    #else
+			        float3 lightDirectionWS = _LightDirection;
+			    #endif
+
+			    float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
+
+			    #if UNITY_REVERSED_Z
+			        positionCS.z = min(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+			    #else
+			        positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+			    #endif
+
+			    return positionCS;
+			}
+
+            Varyings ShadowPassVertex(Attributes input)
+            {
+				UNITY_SETUP_INSTANCE_ID(input);
+				Varyings output;
+				
+                float3 animatorData = UNITY_ACCESS_INSTANCED_PROP(Props, _AnimatorData);
+                float frameIndex = animatorData.x;
+                float blendFrameIndex = animatorData.y;
+                float blendProgress = animatorData.z;
+
+                float vertexIndex = input.vertIndex[0] + 0.5;	// 采样要做半个像素的偏移
+                float4 vertexUV1 = float4((vertexIndex) / _AnimationTex_TexelSize.z, (frameIndex + 0.5) / _AnimationTex_TexelSize.w, 0, 0);
+                float4 pos = tex2Dlod(_AnimationTex, vertexUV1);
+
+                float4 blend_vertexUV1 = float4(vertexIndex / _AnimationTex_TexelSize.z, (blendFrameIndex + 0.5) / _AnimationTex_TexelSize.w, 0, 0);
+                float4 blend_pos = tex2Dlod(_AnimationTex, blend_vertexUV1);
+
+                pos = lerp(pos, blend_pos, blendProgress);
+
+                output.positionCS = GetShadowPositionHClip(pos.xyz, input.normalOS);
+               
+                return output;
+            }
+
+            half4 ShadowPassFragment(Varyings input) : SV_TARGET
+            {
+                return 0;
+            }
             
 
 	    ENDHLSL
@@ -159,6 +152,35 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
                 
                 #pragma vertex Vertex
                 #pragma fragment Fragment
+            ENDHLSL
+        }
+
+		// Shadow Caster
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags{"LightMode" = "ShadowCaster"}
+
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+
+            HLSLPROGRAM
+
+            //--------------------------------------
+            // GPU Instancing
+            #pragma multi_compile_instancing
+            #pragma multi_compile _ DOTS_INSTANCING_ON
+
+            // -------------------------------------
+            // Universal Pipeline keywords
+
+            // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+
+            #pragma vertex ShadowPassVertex
+            #pragma fragment ShadowPassFragment
+
             ENDHLSL
         }
         
