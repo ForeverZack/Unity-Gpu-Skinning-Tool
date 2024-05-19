@@ -7,6 +7,7 @@ Shader "GPUSkin/NoiseGpuVerticesAnimation"
 		_BaseMap("Albedo (RGB)", 2D) = "white" {}
 		_Color("Color", Color) = (1,1,1,1)
 		_AnimationTex("Animation Texture", 2D) = "white" {}
+		_AnimationNormalTex("Animation Normal Texture", 2D) = "white" {}
 
 		_BoneNum("Bone Num", Int) = 0
 		_FrameIndex("Frame Index", Range(0.0, 196)) = 0.0
@@ -42,6 +43,8 @@ Shader "GPUSkin/NoiseGpuVerticesAnimation"
                 half4 _Color;
                 // 动画纹理尺寸信息
                 float4 _AnimationTex_TexelSize;
+                // 动画法线纹理尺寸信息
+                float4 _AnimationNormalTex_TexelSize;
                 // 当前动画第几帧
                 int _FrameIndex;
                 // 下一个动画在第几帧
@@ -61,6 +64,8 @@ Shader "GPUSkin/NoiseGpuVerticesAnimation"
 
 			//  动画纹理
 			sampler2D _AnimationTex;
+            // 动画法线纹理
+            sampler2D _AnimationNormalTex;
 			
             // 动画当前帧纹理 (存储对应位置模型的动画FrameIndex)
             sampler2D _FrameIndexTex;

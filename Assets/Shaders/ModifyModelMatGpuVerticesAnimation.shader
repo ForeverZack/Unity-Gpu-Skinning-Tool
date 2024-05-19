@@ -6,6 +6,7 @@ Shader "GPUSkin/ModifyModelMatGpuVerticesAnimation"
     {
         _BaseMap("Albedo (RGB)", 2D) = "white" {}
         _AnimationTex("AnimationTex", 2D) = "white" {}
+    	_AnimationNormalTex("Animation Normal Texture", 2D) = "white" {}
     }
 
 	SubShader
@@ -33,6 +34,8 @@ Shader "GPUSkin/ModifyModelMatGpuVerticesAnimation"
                 half4 _Color;
                 // 动画纹理尺寸信息
                 float4 _AnimationTex_TexelSize;
+            	// 动画法线纹理尺寸信息
+                float4 _AnimationNormalTex_TexelSize;
             CBUFFER_END
             
             TEXTURE2D(_BaseMap);
@@ -40,6 +43,8 @@ Shader "GPUSkin/ModifyModelMatGpuVerticesAnimation"
 
 			//  动画纹理
 			sampler2D _AnimationTex;
+            // 动画法线纹理
+            sampler2D _AnimationNormalTex;
 		
 			float4x4 QuaternionToMatrix(float4 vec)
 			{

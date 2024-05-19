@@ -55,8 +55,10 @@ namespace Framework.GpuSkinning
             public string saveMaterialName;
             // 存储mesh名称后缀
             public string saveMeshName;
+            // 存储法线名称后缀
+            public string saveNormalDataName;
 
-            public GenerateConfig(AnimationType at, string sn, string sdn, string spn, string smn, string smen)
+            public GenerateConfig(AnimationType at, string sn, string sdn, string spn, string smn, string smen, string sndn = "")
             {
                 animationType = at;
                 shaderName = sn;
@@ -64,16 +66,17 @@ namespace Framework.GpuSkinning
                 savePrefabName = spn;
                 saveMaterialName = smn;
                 saveMeshName = smen;
+                saveNormalDataName = sndn;
             }
         }
         // 配置
         public Dictionary<GenerateType, GenerateConfig> generateConfigs = new Dictionary<GenerateType, GenerateConfig> {
-            { GenerateType.VerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/GpuVerticesAnimation", "_VertData.asset", "_VertPre.prefab", "_VertMat.mat", "_VertMesh.asset") },    // Vertics Animation -- 自动instance 顶点动画
+            { GenerateType.VerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/GpuVerticesAnimation", "_VertData.asset", "_VertPre.prefab", "_VertMat.mat", "_VertMesh.asset", "_VertNormalData.asset") },    // Vertics Animation -- 自动instance 顶点动画
             { GenerateType.Dynamic, new GenerateConfig(AnimationType.Skeleton, "GPUSkin/GpuSkinningAnimation", "_Data.asset", "_DynPre.prefab", "_DynMat.mat", "_Mesh.asset") },    // Dynamic -- 自动instance 骨骼动画
             { GenerateType.GpuInstance, new GenerateConfig(AnimationType.Skeleton, "GPUSkin/GpuSkinningAnim_Inst", "_Data.asset", "_InstPre.prefab", "_InstMat.mat", "_Mesh.asset") },      // Instance -- gpu instance
-            { GenerateType.NoiseVerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/NoiseGpuVerticesAnimation", "_VertData.asset", "_NoiseVertPre.prefab", "_NoiseVertMat.mat", "_VertMesh.asset") },  // Noise Animation -- 自动instance 噪点顶点动画
-            { GenerateType.ModifyModelMatrix, new GenerateConfig(AnimationType.Vertices, "GPUSkin/ModifyModelMatGpuVerticesAnimation", "_VertData.asset", "_ModifyModelMatVertPre.prefab", "_ModifyModelMatVertMat.mat", "_VertMesh.asset") },    // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
-            { GenerateType.MPBVerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/MPBGpuVerticesAnimation", "_VertData.asset", "_MPBVertPre.prefab", "_MPBVertMat.mat", "_VertMesh.asset") },    // MPB -- 自动instance 使用Material Property Block传值
+            { GenerateType.NoiseVerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/NoiseGpuVerticesAnimation", "_VertData.asset", "_NoiseVertPre.prefab", "_NoiseVertMat.mat", "_VertMesh.asset", "_VertNormalData.asset") },  // Noise Animation -- 自动instance 噪点顶点动画
+            { GenerateType.ModifyModelMatrix, new GenerateConfig(AnimationType.Vertices, "GPUSkin/ModifyModelMatGpuVerticesAnimation", "_VertData.asset", "_ModifyModelMatVertPre.prefab", "_ModifyModelMatVertMat.mat", "_VertMesh.asset", "_VertNormalData.asset") },    // Modify Molde Matrix -- 自动instance 修改model矩阵信息(通过scale传入)
+            { GenerateType.MPBVerticesAnim, new GenerateConfig(AnimationType.Vertices, "GPUSkin/MPBGpuVerticesAnimation", "_VertData.asset", "_MPBVertPre.prefab", "_MPBVertMat.mat", "_VertMesh.asset", "_VertNormalData.asset") },    // MPB -- 自动instance 使用Material Property Block传值
         };
 
         // 每根骨骼每帧所占像素空间(0,1:rotation, 2,3:translation)
@@ -98,6 +101,7 @@ namespace Framework.GpuSkinning
         Dictionary<Transform, int> boneIds = null;
         Dictionary<int, Matrix4x4> boneBindposes = null;
         string animTexturePath; // 动画纹理保存路径
+        private string animNormalTexturePath;   // 动画法线纹理保存路径
         float compression = 1f;
 
         public GpuSkinningInstGenerator()
@@ -224,6 +228,8 @@ namespace Framework.GpuSkinning
             // 将骨骼矩阵写入纹理
             var tex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false, true);
             tex2D.filterMode = FilterMode.Point;
+            var normalTex2D = new Texture2D(animData.texWidth, animData.texHeight, TextureFormat.RGBAHalf, false, true);
+            normalTex2D.filterMode = FilterMode.Point;
             int clipIdx = 0;
             int pixelIdx = 0;
             int totalFrameIndex = 0;
@@ -232,8 +238,8 @@ namespace Framework.GpuSkinning
             List<Matrix4x4> boneMatrices = null;
             Vector4 boneIndices, boneWeights;
             Matrix4x4 boneMatrix0, boneMatrix1, boneMatrix2, boneMatrix3;
-            Vector3 src_vertex;
-            Vector4 vertex, position;
+            Vector3 src_vertex, src_normal;
+            Vector4 vertex, position, vertex2, normal;
 
             for (clipIdx = 0; clipIdx < animClips.Length; ++clipIdx)
             {
@@ -249,6 +255,8 @@ namespace Framework.GpuSkinning
                     {
                         src_vertex = instMesh.vertices[vertexIndex];
                         vertex = new Vector4(src_vertex.x, src_vertex.y, src_vertex.z, 1);
+                        src_normal = instMesh.normals[vertexIndex];
+                        vertex2 = new Vector4(src_normal.x, src_normal.y, src_normal.z, 1);
                         boneIndices = boneIndicesList[vertexIndex];
                         boneWeights = boneWeightsList[vertexIndex];
                         boneMatrix0 = boneMatrices[Mathf.RoundToInt(boneIndices.x)];
@@ -259,15 +267,22 @@ namespace Framework.GpuSkinning
                         matrixMulFloat(ref boneMatrix1, boneWeights.y);
                         matrixMulFloat(ref boneMatrix2, boneWeights.z);
                         matrixMulFloat(ref boneMatrix3, boneWeights.w);
+                        // 顶点位置
                         position = (matrixAddMatrix(matrixAddMatrix(boneMatrix0, boneMatrix1), matrixAddMatrix(boneMatrix2, boneMatrix3))) * vertex;
                         Color[] colors = convertThreeFloat16Bytes2TwoColor(convertFloat32toFloat16Bytes(position.x), convertFloat32toFloat16Bytes(position.y), convertFloat32toFloat16Bytes(position.z));
                         tex2D.SetPixel(vertexIndex, totalFrameIndex, new Color(position.x, position.y, position.z));
+                        // 顶点法线
+                        normal = (matrixAddMatrix(matrixAddMatrix(boneMatrix0, boneMatrix1), matrixAddMatrix(boneMatrix2, boneMatrix3))) * vertex2;
+                        normal = normal.normalized;
+                        Color[] normalColors = convertThreeFloat16Bytes2TwoColor(convertFloat32toFloat16Bytes(normal.x), convertFloat32toFloat16Bytes(normal.y), convertFloat32toFloat16Bytes(normal.z));
+                        normalTex2D.SetPixel(vertexIndex, totalFrameIndex, new Color(normal.x, normal.y, normal.z));
                     }
 
                     ++totalFrameIndex;
                 }
             }
             tex2D.Apply();
+            normalTex2D.Apply();
             // 隐藏进度
             EditorUtility.ClearProgressBar();
             
@@ -277,6 +292,8 @@ namespace Framework.GpuSkinning
 //            setAnimationTextureProperties(animTexturePath);
             animTexturePath = Path.Combine(Path.GetDirectoryName(savePath), dataFileName.Replace(".asset", "")) + ".animMap.asset";
             exportTextureAsset(tex2D, animTexturePath);
+            animNormalTexturePath = Path.Combine(Path.GetDirectoryName(savePath), dataFileName.Replace(".asset", "")) + ".animNormalMap.asset";
+            exportTextureAsset(normalTex2D, animNormalTexturePath);
             
 
                 
@@ -453,6 +470,12 @@ namespace Framework.GpuSkinning
                 Texture2D mainTex = AssetDatabase.LoadAssetAtPath<Texture2D>(mainTexPath);
                 instMaterial.SetTexture("_MainTex", mainTex);
                 instMaterial.SetTexture("_BaseMap", mainTex);
+            }
+            if (config.animationType == AnimationType.Vertices)
+            {
+                // 顶点动画需要提供法线纹理数据
+                Texture2D saved_animNormalTex = AssetDatabase.LoadAssetAtPath<Texture2D>(animNormalTexturePath);
+                instMaterial.SetTexture("_AnimationNormalTex", saved_animNormalTex);
             }
             instMaterial.SetTexture("_AnimationTex", saved_animTex);
 

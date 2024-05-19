@@ -6,6 +6,7 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
     {
         _BaseMap("Albedo (RGB)", 2D) = "white" {}
         _AnimationTex("AnimationTex", 2D) = "white" {}
+    	_AnimationNormalTex("AnimationNormalTex", 2D) = "white" {}
     }
 
 	SubShader
@@ -33,6 +34,8 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
                 half4 _Color;
                 // 动画纹理尺寸信息
                 float4 _AnimationTex_TexelSize;
+				// 动画法线纹理尺寸信息
+				float4 _AnimationNormalTex_TexelSize;
             CBUFFER_END
             
             UNITY_INSTANCING_BUFFER_START(Props)
@@ -44,8 +47,10 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
 
-			//  动画纹理
+			// 动画纹理
 			sampler2D _AnimationTex;
+            // 动画法线纹理
+            sampler2D _AnimationNormalTex;
 
 			Varyings Vertex(Attributes input)
 			{
@@ -127,7 +132,9 @@ Shader "GPUSkin/MPBGpuVerticesAnimation"
 
                 pos = lerp(pos, blend_pos, blendProgress);
 
-                output.positionCS = GetShadowPositionHClip(pos.xyz, input.normalOS);
+				float3 normal = tex2Dlod(_AnimationNormalTex, vertexUV1);
+
+                output.positionCS = GetShadowPositionHClip(pos.xyz, normal);
                
                 return output;
             }

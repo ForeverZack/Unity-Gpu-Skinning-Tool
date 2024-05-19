@@ -13,17 +13,13 @@ MonoBehaviour:
   m_Name: Fighter_VertData
   m_EditorClassIdentifier: 
   texWidth: 1721
-  texHeight: 223
+  texHeight: 197
   clips:
   - name: Take 001
     startFrame: 0
     endFrame: 196
     frameRate: 30
-  - name: idle
-    startFrame: 197
-    endFrame: 222
-    frameRate: 30
-  totalFrame: 223
+  totalFrame: 197
   totalBoneNum: 42
   min: 0
   max: 0

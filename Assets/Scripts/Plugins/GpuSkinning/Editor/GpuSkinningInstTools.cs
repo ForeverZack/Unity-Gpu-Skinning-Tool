@@ -23,8 +23,8 @@ namespace Framework.GpuSkinning
         static string parentFolder;
 
         // 生成类型
-        private GpuSkinningInstGenerator.GenerateType generateType = GpuSkinningInstGenerator.GenerateType.VerticesAnim;
-        private GpuSkinningInstGenerator.GenerateType lastGenerateType = GpuSkinningInstGenerator.GenerateType.VerticesAnim;
+        private GpuSkinningInstGenerator.GenerateType generateType = GpuSkinningInstGenerator.GenerateType.MPBVerticesAnim;
+        private GpuSkinningInstGenerator.GenerateType lastGenerateType = GpuSkinningInstGenerator.GenerateType.MPBVerticesAnim;
         GameObject selectedFbx = null;
         GameObject curGameObject = null;
         // 附加动画文件
@@ -35,6 +35,8 @@ namespace Framework.GpuSkinning
         string savePath = "";
         // 数据文件名
         string saveName = "";
+        // 数据法线文件名
+        string saveNormalName = "";
         // prefab
         string savePrefabName = "";
         // material
@@ -95,6 +97,7 @@ namespace Framework.GpuSkinning
                     // }
                     GpuSkinningInstGenerator.GenerateConfig config = generator.generateConfigs[generateType];
                     saveName = selectedFbx.name + config.saveDataName;
+                    saveNormalName = selectedFbx.name + config.saveNormalDataName;
                     savePrefabName = selectedFbx.name + config.savePrefabName;
                     saveMaterialName = selectedFbx.name + config.saveMaterialName;
   
@@ -169,6 +172,15 @@ namespace Framework.GpuSkinning
             savePath = EditorGUILayout.TextField(savePath);
             EditorGUILayout.LabelField(string.Format("输出文件:{0}", Path.Combine(savePath, saveName)));
             saveName = EditorGUILayout.TextField(saveName);
+            {
+                GpuSkinningInstGenerator.GenerateConfig config = generator.generateConfigs[generateType];
+                if (config.animationType == GpuSkinningInstGenerator.AnimationType.Vertices)
+                {
+                    // 顶点动画
+                    EditorGUILayout.LabelField(string.Format("输出法线文件:{0}", Path.Combine(savePath, saveNormalName)));
+                    saveNormalName = EditorGUILayout.TextField(saveNormalName);
+                }
+            }
             EditorGUILayout.LabelField(string.Format("输出材质:{0}", Path.Combine(savePath, saveMaterialName)));
             saveMaterialName = EditorGUILayout.TextField(saveMaterialName);
             EditorGUILayout.LabelField(string.Format("输出Prefab:{0}", Path.Combine(savePath, savePrefabName)));
