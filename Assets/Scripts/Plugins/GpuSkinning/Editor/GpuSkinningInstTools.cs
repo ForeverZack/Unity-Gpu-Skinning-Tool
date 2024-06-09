@@ -104,25 +104,22 @@ namespace Framework.GpuSkinning
                     mainTexPath = srcPath + selectedFbx.name + DEFAULT_MAIN_TEX_NAME_POSTFIX;
                     
                     extAnimationClips.Clear();
+
+                    refreshPanel(selectedFbx);
+                }
+
+                if (animationNames == null || animationNames.Length != m_clipList.Count)
+                {
                     // animation list
                     List<string> animationNameList = new List<string>();
-                    string assetPath = AssetDatabase.GetAssetPath(selectedFbx);
-                    UnityEngine.Object[] objs = AssetDatabase.LoadAllAssetsAtPath(assetPath);
-                    AnimationClip clip;
-                    for (int i = 0; i < objs.Length; i++)
+                    foreach (var item in m_clipList)
                     {
-                        if (objs[i] is AnimationClip)
-                        {
-                            if (objs[i].hideFlags == (HideFlags.HideInHierarchy | HideFlags.NotEditable))
-                                continue;
-
-                            clip = objs[i] as AnimationClip;
-                            animationNameList.Add(clip.name);
-                        }
+                        animationNameList.Add(item.name);
                     }
+
                     animationNames = animationNameList.ToArray();
                     selectedAnimation = 0;
-                    for (int i=0; i<animationNames.Length; ++i)
+                    for (int i = 0; i < animationNames.Length; ++i)
                     {
                         if (animationNames[i].Contains("daiji01") || animationNames[i].Contains("idle"))
                         {
@@ -130,10 +127,8 @@ namespace Framework.GpuSkinning
                             break;
                         }
                     }
-
-                    refreshPanel(selectedFbx);
                 }
-                
+
                 EditorGUILayout.LabelField("附加动画列表:");
                 EditorUtils.CreateListField(extAnimationClips, (idx, clip) =>
                 {
